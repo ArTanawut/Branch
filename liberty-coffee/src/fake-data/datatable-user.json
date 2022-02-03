@@ -1,0 +1,49 @@
+{
+  "data": [
+    {
+      "id": "1",
+      "fullName": "Firstname1 Lastname1",
+      "username": "user1",
+      "rolename": "Admin",
+      "branchname": "Branch1",
+      "activeflag": "Active",
+      "createdate": "23/11/2021"
+    },
+    {
+      "id": "2",
+      "fullName": "Firstname2 Lastname2",
+      "username": "user2",
+      "rolename": "Manager",
+      "branchname": "Branch1",
+      "activeflag": "Active",
+      "createdate": "23/11/2021"
+    },
+    {
+      "id": "3",
+      "fullName": "Firstname3 Lastname3",
+      "username": "user3",
+      "rolename": "Employee",
+      "branchname": "Branch1",
+      "activeflag": "Active",
+      "createdate": "23/11/2021"
+    },
+    {
+      "id": "4",
+      "fullName": "Firstname4 Lastname4",
+      "username": "user4",
+      "rolename": "Employee",
+      "branchname": "Branch1",
+      "activeflag": "Inactive",
+      "createdate": "23/11/2021"
+    },
+    {
+      "id": "5",
+      "fullName": "Firstname5 Lastname5",
+      "username": "user5",
+      "rolename": "Manager",
+      "branchname": "Branch2",
+      "activeflag": "Active",
+      "createdate": "23/11/2021"
+    }
+  ]
+}

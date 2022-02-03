@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  timeout: 60
+mysql:
+  driver: "mysql"
+  connection: "cm9vdDpQQHNzdzByZEB0Y3AoMTI3LjAuMC4xOjMzMDYpL2xpYmVydHlfY29mZmVl"
+log:
+  env:
+    name: "DEVELOPMENT"
+    prod: "PRODUCTION"
+    dev: "DEVELOPMENT"
+  path: ""
+secret:
+    key: "z4yH36a6zerhfE5427ZV"

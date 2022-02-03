@@ -1,0 +1,314 @@
+<div class="row">
+          <div class="col-sm-12">
+            <app-card [hidHeader]="true" cardClass="card-datatable" [options]="false">
+              <div style="padding-bottom: 10px;">
+                <button type="button" class="btn btn-success" data-toggle="modal"
+                  (click)="openModal(Template);onNewUOM();" >เพิ่มข้อมูล</button>
+              </div>
+              <div class="table-responsive" >
+                <table *ngIf="raws" datatable="ng" datatable [dtOptions]="dtOptions" 
+                [dtTrigger]="dtTrigger" class="table table-striped table-bordered table-hover"
+                style="width: 99%;">
+                  <thead>
+                    <tr >
+                      <th style="width: 10%;">#</th>
+                      <th style="width: 30%;" >วัตถุดิบ</th>
+                      <th style="width: 20%;" >หน่วยนับ</th>
+                      <th style="width: 20%;" >จำนวน</th>
+                      <th style="width: 10%;">เปิดใช้งาน</th>
+                      <th style="width: 10%;"></th>
+                    </tr>
+                  </thead>
+                  <tbody *ngIf="raws?.length != 0">
+                      <tr *ngFor="let raw of raws">
+                          <td>{{ raw.no }}</td>
+                          <td>{{ raw.name }}</td>
+                          <td>{{ raw.uom_name }}</td>
+                          <td>{{ raw.remaining_qty - 0 }}</td>
+                          <td *ngIf="raw.active==1;else tpl">
+                            <i class="fa fa-check"></i>
+                          </td>
+                            <ng-template #tpl>
+                            <td><i class="fa fa-times"></i></td>
+                            </ng-template>
+                            <!-- pen-square -->
+                          <td class="text-center">
+                            <button type="button" class="btn btn-icon" (click)="editModal(Template,raw);"
+                            style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;" >
+                            <i class="fa fa-pen"></i></button>
+                            &nbsp;
+                            <button type="button" class="btn btn-icon" (click)="deleteModal(TemplateDelete,raw);"
+                            style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;" >
+                            <i class="fa fa-trash"></i></button>
+                          </td>
+                      </tr>
+                  </tbody>
+                </table>
+            </div>
+            </app-card>
+          </div>
+        </div>
+        
+        <ng-template #Template>
+          <div class="modal-header">
+            <h4 class="modal-title pull-left">เพิ่มข้อมูลวัตถุดิบ</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="row">
+                <div class="col-6">
+                  <div class="form-group">
+                    <label for="inputAddress">รหัส/บาร์โค้ด</label>
+                    <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Barcode" [ngModelOptions]="{standalone: true}">
+                  </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                      <label for="inputAddress">วัตถุดิบ</label>
+                      <input type="text" class="form-control" id="inputAddress" [(ngModel)]="RAW_Name" [ngModelOptions]="{standalone: true}">
+                    </div>
+                  </div>
+              </div>
+              <div class="row">
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label for="inputAddress">จำนวนคงเหลือ</label>
+                        <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Remaining_qty" [ngModelOptions]="{standalone: true}">
+                      </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                          <label for="inputAddress">หน่วยนับ</label>
+                          <select id="inputState1" class="form-control" [(ngModel)]="UOM_ID"  [ngModelOptions]="{standalone: true}">
+                              <option selected></option>
+                              <option *ngFor="let result1 of ddlUOMs" [value]="result1.uom_id" >
+                                {{result1.uom_name}}</option>
+                        </select>
+                        </div>
+                      </div>
+                  </div>
+              <div class="row">
+                  <div class="col-12">
+                  <div class="form-group">
+                    <div class="switch switch-primary d-inline m-r-10">
+                      <input type="checkbox" id="switch-p-1"  [checked]="RAW_Active" name="chkActive"
+                      (change)="RAW_Active = !RAW_Active">
+                      <label for="switch-p-1" class="cr"></label>
+                    </div>
+                    <label>เปิดใช้งาน</label>
+                  </div>
+                  </div>
+                </div>
+              <div class="text-right">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                  (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
+                <button type="button" class="btn btn-primary" (click)="SaveRAW();modalRef.hide()">บันทึก</button>
+              </div>
+            </form>
+          </div>
+        </ng-template>
+        
+        <ng-template #TemplateEdit>
+                  <div class="modal-header">
+                    <h4 class="modal-title pull-left">แก้ไขข้อมูลหน่วยนับ</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <div class="row">
+                        <div class="col-12">
+                          <div class="form-group">
+                            <label for="inputAddress">หน่วยนับ</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                            <div class="col-8">
+                              <div class="form-group">
+                                <input type="text" class="form-control" id="inputAddress" [(ngModel)]="UOM_Name" [ngModelOptions]="{standalone: true}">
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-group">
+                                      <div *ngIf="UOM_Active_ID==1;else tpl1">
+                                      <button type="button" class="btn btn-success" data-toggle="modal"
+                                      (click)="modalRef.hide();addUOMTModal(TemplateTransfer);" >แปลงหน่วยนับ</button>
+                                      </div>
+                                      <ng-template #tpl1>
+                                                <button type="button" class="btn btn-dark" disabled >แปลงหน่วยนับ</button>
+                                      </ng-template>
+                                  
+                                </div>
+                              </div>
+                          </div>
+                      <div class="row">
+                          <div class="col-12">
+                          <div class="form-group">
+                            <div class="switch switch-primary d-inline m-r-10">
+                              <input type="checkbox" id="switch-p-1"  [checked]="UOM_Active" name="chkActive"
+                              (change)="UOM_Active = !UOM_Active">
+                              <label for="switch-p-1" class="cr"></label>
+                            </div>
+                            <label>เปิดใช้งาน</label>
+                          </div>
+                          </div>
+                        </div>
+                      <div class="text-right">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                          (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
+                        <button type="button" class="btn btn-primary" (click)="UpdateUOM();modalRef.hide()">บันทึก</button>
+                      </div>
+                    </form>
+                  </div>
+                </ng-template>
+        
+        <ng-template #TemplateTransfer>
+                  <div class="modal-header">
+                    <h4 class="modal-title pull-left">แปลงหน่วยนับ</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <div class="row">
+                            <div class="col-6">
+                              <div class="form-group">
+                                <label for="inputAddress">หน่วยนับ 1</label>
+                                <select id="inputState" class="form-control" [(ngModel)]="UOMID_1"  [ngModelOptions]="{standalone: true}">
+                                      <option selected></option>
+                                      <option *ngFor="let result of ddlUOMs" [value]="result.uom_id" 
+                                      [selected]="UOMID_1 == result.uom_id ? 'selected' :'' " >
+                                        {{result.uom_name}}</option>
+                                </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                  <label for="inputAddress">จำนวน</label>
+                                  <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Quantity_1" [ngModelOptions]="{standalone: true}">
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-6">
+                              <div class="form-group">
+                                <label for="inputAddress">หน่วยนับ 2</label>
+                                <select id="inputState1" class="form-control" [(ngModel)]="UOMID_2"  [ngModelOptions]="{standalone: true}">
+                                      <option selected></option>
+                                      <option *ngFor="let result1 of ddlUOMs" [value]="result1.uom_id" >
+                                        {{result1.uom_name}}</option>
+                                </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                  <label for="inputAddress">จำนวน</label>
+                                  <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Quantity_2" [ngModelOptions]="{standalone: true}">
+                                  </div>
+                              </div>
+                          </div>
+                      <div class="text-right">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                          (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
+                        <button type="button" class="btn btn-primary" (click)="SaveUOMT();modalRef.hide()">บันทึก</button>
+                      </div>
+                    </form>
+                  </div>
+                </ng-template>
+        
+        <ng-template #TemplateViewUOMT>
+                  <div class="modal-header">
+                    <h4 class="modal-title pull-left">เทียบปริมาตรต่อ 1 {{UOM_Name}}</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form>
+                      <div class="row">
+                            <div class="col-12">
+                              <div class="form-group">
+                                <button type="button" class="btn btn-success" data-toggle="modal"
+                                      (click)="modalRef.hide();addUOMTModal(TemplateTransfer);" >เพิ่มข้อมูล</button>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                              <div class="form-group">
+                                      <div class="table-responsive" >
+                                                <table *ngIf="uomts" datatable="ng" datatable [dtOptionsUOMT]="dtOptionsUOMT" 
+                                                [dtTrigger]="dtTrigger" class="table table-striped table-bordered table-hover"
+                                                style="width: 99%;">
+                                                  <thead>
+                                                    <tr >
+                                                      <th style="width: 40%;" >หน่วยนับ</th>
+                                                      <th style="width: 40%;">จำนวน</th>
+                                                      <th style="width: 20%;"></th>
+                                                    </tr>
+                                                  </thead>
+                                                  <tbody *ngIf="uomts?.length != 0">
+                                                      <tr *ngFor="let uomt of uomts">
+                                                          <td class="text-center">{{ uomt.name2 }}</td>
+                                                          <td class="text-center">{{ uomt.quantity2 }}</td>
+                                                          <td class="text-center">
+                                                            <button type="button" class="btn btn-icon" (click)="modalRef.hide();editUOMTModal(TemplateTransfer,uomt);"
+                                                            style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;" >
+                                                            <i class="fa fa-pen"></i></button>
+                                                            &nbsp;
+                                                            <button type="button" class="btn btn-icon" (click)="modalRef.hide();deleteModal1(TemplateDelete1,uomt);"
+                                                            style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;" >
+                                                            <i class="fa fa-trash"></i></button>
+                                                          </td>
+                                                      </tr>
+                                                  </tbody>
+                                                </table>
+                                            </div>
+                                </div>
+                            </div>
+        
+                          </div>
+                    </form>
+                  </div>
+                </ng-template>
+        
+        <ng-template #TemplateDelete>
+          <div class="modal-header">
+            <h4 class="modal-title pull-left">Delete</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body text-center">
+            ต้องการลบข้อมูลวัตถุดิบหรือไม่?
+            <div style="margin-top:25px">
+              <button type="button" class="btn btn-default" (click)="DeleteRAW()" (mouseover)="btnColor()"
+                id="btn-yes">Yes</button>
+              <button type="button" class="btn btn-primary" (click)="decline()" (mouseover)="btnColorNo()"
+                id="btn-no">No</button>
+            </div>
+          </div>
+        </ng-template>
+        
+        <ng-template #TemplateDelete1>
+          <div class="modal-header">
+            <h4 class="modal-title pull-left">Delete</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body text-center">
+            ต้องการลบข้อมูลแปลงหน่วยนับหรือไม่?
+            <div style="margin-top:25px">
+              <button type="button" class="btn btn-default" (click)="DeleteUOMT()" (mouseover)="btnColor()"
+                id="btn-yes">Yes</button>
+              <button type="button" class="btn btn-primary" (click)="decline()" (mouseover)="btnColorNo()"
+                id="btn-no">No</button>
+            </div>
+          </div>
+        </ng-template>
+        
