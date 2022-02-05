@@ -117,6 +117,14 @@ func main() {
 	e.POST("stock/deleteStock", deleteStock)
 	e.POST("stock/genDocNo", genDocNo)
 
+	e.GET("stock/GetBundleProducts", getBundleProduct)
+	e.POST("stock/addSaleHeader", addSale)
+	e.POST("stock/addSaleLine", addSaleLine)
+	e.POST("stock/getSaleLine", getSaleLines)
+
+	// shop
+	e.GET("shop/getBranch", getBranchs)
+
 	e.Server.Addr = fmt.Sprintf(":%d", port)
 	graceful.ListenAndServe(e.Server, time.Duration(timeout)*time.Second)
 

@@ -96,6 +96,7 @@ type Login struct {
 	Password  string `json:"password"`
 	Role_Id   int    `json:"role_id"`
 	Branch_Id int    `json:"branch_id"`
+	Userid    int    `json:"userid"`
 }
 
 func (p *ResultsLogin) setErrorHandle(status int, msg string) {

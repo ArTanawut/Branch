@@ -1,11 +1,49 @@
-<input type="file" (change)="onFileChange($event)" multiple="false" />
-<table class="sjs-table">
-  <tbody>
-    <tr *ngFor="let row of data">
-      <td *ngFor="let val of row">
-        {{val}}
-      </td>
-    </tr>
-  </tbody>
-</table>
-<button (click)="export()">Export!</button>
+<div class="row">
+  <div class="col-sm-12">
+    <app-card [hidHeader]="true" cardClass="card-datatable" [options]="false">
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group">
+            <label for="inputAddress">ชื่อร้านค้า</label>
+            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Shop_Name"
+              [ngModelOptions]="{standalone: true}" autocomplete="off">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label for="inputAddress">รายละเอียดร้านค้า</label>
+            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Shop_Detail"
+              [ngModelOptions]="{standalone: true}" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <label for="inputAddress">เวลาเปิด-ปิด</label>
+            <div class="row">
+              <div class="col-3">
+                <input [textMask]="{mask: maskHour}" type="text" class="form-control" placeholder="hh:mm"
+                  autocomplete="off" [(ngModel)]="Time_Open" [ngModelOptions]="{standalone: true}"
+                  style="text-align: center;" />
+              </div>
+              <div class="col-0">
+                <label for="inputAddress">-</label>
+              </div>
+              <div class="col-3">
+                <input [textMask]="{mask: maskHour}" type="text" class="form-control" placeholder="hh:mm"
+                  autocomplete="off" [(ngModel)]="Time_Close" [ngModelOptions]="{standalone: true}"
+                  style="text-align: center;" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-right" style="padding-top: 100px;">
+        <hr width="100%">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>&nbsp;
+        <button type="button" class="btn btn-primary">บันทึก</button>
+      </div>
+    </app-card>
+  </div>
+</div>

@@ -8,21 +8,24 @@
     <div class="auth-side-form">
       <div class=" auth-content">
         <h3 class="mb-4 f-w-400">Log In</h3>
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" style="background-color:#6fcdb3;"><i class="feather icon-user"
-                style="color: white;"></i></span>
+        <form [formGroup]="form2" (ngSubmit)="onSubmit(form2.value)">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" style="background-color:#6fcdb3;"><i class="feather icon-user"
+                  style="color: white;"></i></span>
+            </div>
+            <input type="text" class="form-control" formControlName="username" placeholder="Username">
           </div>
-          <input type="text" class="form-control" [(ngModel)]="username" placeholder="Username">
-        </div>
-        <div class="input-group mb-4">
-          <div class="input-group-prepend">
-            <span class="input-group-text" style="background-color:#6fcdb3;"><i class="feather icon-lock"
-                style="color:white;"></i></span>
+          <div class="input-group mb-4">
+            <div class="input-group-prepend">
+              <span class="input-group-text" style="background-color:#6fcdb3;"><i class="feather icon-lock"
+                  style="color:white;"></i></span>
+            </div>
+            <input type="password" formControlName="password" class="form-control" placeholder="Password">
           </div>
-          <input type="password" class="form-control" [(ngModel)]="password" placeholder="Password">
-        </div>
-        <button class="btn btn-block btn-info mb-0" (click)="onLogin()">Log In</button>
+          <button type="submit" class="btn btn-block btn-info mb-0" (click)="onLogin(form2.value)">Log In</button>
+        </form>
+        <!-- <button class="btn btn-block btn-info mb-0" (click)="onLogin()">Log In</button> -->
       </div>
     </div>
   </div>

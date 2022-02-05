@@ -60,6 +60,8 @@ export class ExportRawByimportComponent implements OnInit {
   Product_Active_ID: any;
   ddlUOMs: any[];
   ddlRAWs: any[];
+  BundleProductList: any[];
+  BundleProductMap: any[]
   Bundle_ID;
   ProductID_1;
   ProductID_2;
@@ -94,6 +96,9 @@ export class ExportRawByimportComponent implements OnInit {
   // doc_date: any;
   linecount: any;
   doc_date: NgbDateStruct;
+  Filename: any;
+  StringDoc_No: string;
+  StringDoc_Date: string;
 
   data: AOA = [[1, 2], [3, 4]];
   wopts: XLSX.WritingOptions = { bookType: 'xlsx', type: 'array' };
@@ -112,6 +117,7 @@ export class ExportRawByimportComponent implements OnInit {
     this.getStocks()
     this.getddlUOMs();
     this.getddlRAWs();
+    this.getGetBundleProducts();
 
 
   }
@@ -186,6 +192,20 @@ export class ExportRawByimportComponent implements OnInit {
         });
   }
 
+  getGetBundleProducts() {
+    //confirm, unconfirm
+    this.apiService.restApiGet("http://localhost:8080/stock/GetBundleProducts")
+      .subscribe(
+        data => {
+          // console.log(data)
+          this.BundleProductList = data['data'];
+          // console.log(this.ddlRole)
+        },
+        error => {
+          //console.log(error);
+        });
+  }
+
   onNewProduct() {
     this.Stock_ID = "";
     this.doc_no = "";
@@ -213,102 +233,143 @@ export class ExportRawByimportComponent implements OnInit {
     }
   }
 
-  SaveStock() {
-    console.log(this.Stock_ID)
-    if (this.Stock_ID == "") { //Add Stock
-      console.log("Save Stock")
-      // this.doc_date = gettoday
-      var date = new Date();
-      this.doc_date = { day: date.getUTCDay(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
-      var dateuse = '0' + this.doc_date.day
-      var monthuse = '0' + this.doc_date.month
+  RemoveComma(data: string) {
+    return data.replace(/,/g, "")
+  }
 
+  SaveData() {
+    this.SaveSale()
+
+
+  }
+
+  SaveSale() {
+    console.log("Save Sale")
+    // this.doc_date = gettoday
+    var date = new Date();
+    this.doc_date = { day: date.getUTCDay(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
+    var dateuse = '0' + this.doc_date.day
+    var monthuse = '0' + this.doc_date.month
+
+    let json = {
+      doc_date: this.doc_date.year.toString().slice(-2) + monthuse.slice(-2) + dateuse.slice(-2)
+      // doc_date: "220201"
+    }
+    console.log(JSON.stringify(json))
+
+    this.apiService.restApiSendParm("http://localhost:8080/stock/genDocNo", JSON.stringify(json))
+      .subscribe(
+        response => {
+          if (response) {
+            this.StringDoc_No = response['data'][0].new_docno
+            this.StringDoc_Date = this.doc_date.year.toString() + '-' + monthuse.slice(-2) + '-' + dateuse.slice(-2)
+
+            let jsonSale = {
+              branch_id: 1,
+              doc_no: response['data'][0].new_docno,
+              doc_date: this.doc_date.year.toString() + '-' + monthuse.slice(-2) + '-' + dateuse.slice(-2),
+              remarks: "",
+              filename: this.Filename
+            }
+            this.apiService.restApiSendParm("http://localhost:8080/stock/addSaleHeader", JSON.stringify(jsonSale))
+              .subscribe(
+                response => {
+                  if (response) {
+                    // console.log("Insert Sale Header Complete")
+                    this.AddSaleLine(response['data'][0].sale_header_id);
+                    // this.SaveStock();
+                    // Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
+                    // this.getProducts();
+                  } else {
+                    // console.log("Login Fail")
+                    Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+                  }
+                },
+                error => {
+                  // console.log(error)
+                  Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+                });
+          } else {
+            // console.log("Login Fail")
+            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          }
+        },
+        error => {
+          // console.log(error)
+          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+        });
+
+  }
+
+  AddSaleLine(sale_header_id: string) {
+    // console.log(sale_header_id)
+    // console.log("Add Sale Line")
+    for (let i = 0; i < this.items.length; i++) {
+      // console.log("Loop :" + i)
       let json = {
-        doc_date: this.doc_date.year.toString().slice(-2) + monthuse.slice(-2) + dateuse.slice(-2)
-        // doc_date: "220201"
+        sale_header_id: parseInt(sale_header_id),
+        product_id: parseInt(this.items[i].productId),
+        branch_id: parseInt("1"),
+        barcode: this.items[i].barcode,
+        uom_id: parseInt(this.items[i].uom_id),
+        quantity: parseFloat(this.RemoveComma(this.items[i].quantity.toString())),
+        price: parseFloat(this.RemoveComma(this.items[i].price.toString())),
+        total_price: parseFloat(this.RemoveComma(this.items[i].total_price.toString())),
       }
-      console.log(JSON.stringify(json))
 
-      // this.apiService.restApiSendParm("http://localhost:8080/stock/genDocNo", JSON.stringify(json))
-      //   .subscribe(
-      //     response => {
-      //       if (response) {
-      //         let json = {
-      //           doc_no: response['data'][0].new_docno,
-      //           doc_date: this.doc_date.year.toString() + '-' + monthuse.slice(-2) + '-' + dateuse.slice(-2),
-      //           //doc_date: "2021-02-01",
-      //           type: 3,
-      //           remarks: this.remark,
-      //           draft: this.ConverBooltoInt(this.chkDraft),
-      //           filename: "",
-      //           user: 9,
-      //         }
-      //         //console.log(JSON.stringify(json))
-      //         this.apiService.restApiSendParm("http://localhost:8080/stock/addStock", JSON.stringify(json))
-      //           .subscribe(
-      //             response => {
-      //               if (response) {
-      //                 this.DeleteStockLine(response['data'][0].stock_header_id);
-
-      //                 Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
-      //                 // this.getProducts();
-      //               } else {
-      //                 // console.log("Login Fail")
-      //                 Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
-      //               }
-      //             },
-      //             error => {
-      //               // console.log(error)
-      //               Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
-      //             });
-
-
-      //       } else {
-      //         // console.log("Login Fail")
-      //         Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
-      //       }
-      //     },
-      //     error => {
-      //       // console.log(error)
-      //       Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
-      //     });
-    } else {
-      console.log("Update Stock")
-      // console.log(this.Bundle_ID)
-      var dateuse = '0' + this.doc_date.day
-      var monthuse = '0' + this.doc_date.month
-      let json = {
-        id: this.Stock_ID,
-        doc_no: this.doc_no,
-        doc_date: this.doc_date.year.toString().slice(-2) + monthuse.slice(-2) + dateuse.slice(-2),
-        type: 3,
-        remarks: this.remark,
-        draft: this.ConverBooltoInt(this.chkDraft),
-        filename: "",
-        user: 9,
-      }
-      console.log(JSON.stringify(json))
-
-      this.apiService.restApiSendParm("http://localhost:8080/stock/updateStock", JSON.stringify(json))
+      // console.log(JSON.stringify(json))
+      this.apiService.restApiSendParm("http://localhost:8080/stock/addSaleLine", JSON.stringify(json))
         .subscribe(
           response => {
             if (response) {
-              console.log("updateStock Complete")
-              this.DeleteStockLine(this.Stock_ID);
-
-              Swal.fire('แก้ไขข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
               // this.getProducts();
             } else {
               // console.log("Login Fail")
-              Swal.fire('', 'ไม่สามารถแก้ไขข้อมูลนำออกวัตถุดิบได้', 'error');
+              Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
             }
           },
           error => {
             // console.log(error)
-            Swal.fire('', 'ไม่สามารถแก้ไขข้อมูลนำออกวัตถุดิบได้', 'error');
+            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
           });
-      this.modalRef.hide();
     }
+  }
+
+  SaveStock() {
+    // console.log(this.Stock_ID)
+    //Add Stock
+    console.log("Save Stock")
+    // console.log(this.StringDoc_No)
+    // console.log(this.StringDoc_Date)
+    // this.doc_date = gettoday
+
+    let jsonStock = {
+      doc_no: this.StringDoc_No,
+      doc_date: this.StringDoc_Date,
+      type: 3,
+      remarks: "",
+      draft: 0,
+      filename: this.Filename,
+      user: 9,
+    }
+    // console.log(JSON.stringify(jsonStock))
+    this.apiService.restApiSendParm("http://localhost:8080/stock/addStock", JSON.stringify(jsonStock))
+      .subscribe(
+        response => {
+          if (response) {
+            this.DeleteStockLine(response['data'][0].stock_header_id);
+
+            Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
+            // this.getProducts();
+          } else {
+            // console.log("Login Fail")
+            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          }
+        },
+        error => {
+          // console.log(error)
+          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+        });
   }
 
   DeleteStockLine(stock_header_id: string) {
@@ -400,7 +461,7 @@ export class ExportRawByimportComponent implements OnInit {
     }
     console.log(JSON.stringify(json))
 
-    this.apiService.restApiSendParm("http://localhost:8080/stock/getStockLine", JSON.stringify(json))
+    this.apiService.restApiSendParm("http://localhost:8080/stock/getSaleLine", JSON.stringify(json))
       .subscribe(
         data => {
           this.items = data['data'];
@@ -511,58 +572,73 @@ export class ExportRawByimportComponent implements OnInit {
 
   onFileChange(evt: any) {
     /* wire up file reader */
-    const target: DataTransfer = <DataTransfer>(evt.target);
-    if (target.files.length !== 1) throw new Error('Cannot use multiple files');
-    const reader: FileReader = new FileReader();
-    reader.onload = (e: any) => {
-      /* read workbook */
-      const bstr: string = e.target.result;
-      const wb: XLSX.WorkBook = XLSX.read(bstr, { type: 'binary' });
+    if (evt.target.files.length > 0) {
+      this.Filename = evt.target.files[0].name
+      // console.log(evt.target.files[0].name);
 
-      /* grab first sheet */
-      const wsname: string = wb.SheetNames[0];
-      const ws: XLSX.WorkSheet = wb.Sheets[wsname];
+      const target: DataTransfer = <DataTransfer>(evt.target);
+      if (target.files.length !== 1) throw new Error('Cannot use multiple files');
+      const reader: FileReader = new FileReader();
+      reader.onload = (e: any) => {
+        /* read workbook */
+        const bstr: string = e.target.result;
+        const wb: XLSX.WorkBook = XLSX.read(bstr, { type: 'binary' });
 
-      // this.addItems()
-      /* save data */
-      this.data = <AOA>(XLSX.utils.sheet_to_json(ws, { header: 1 }));
-      // console.log("data:", this.data);
+        /* grab first sheet */
+        const wsname: string = wb.SheetNames[0];
+        const ws: XLSX.WorkSheet = wb.Sheets[wsname];
 
-      this.items = [];
-      this.newItemStock = {};
+        // this.addItems()
+        /* save data */
+        this.data = <AOA>(XLSX.utils.sheet_to_json(ws, { header: 1 }));
+        // console.log("data:", this.data);
 
-      for (var index in this.data) {
-        if (index != "0") {
-          if (this.data[index][1] != "") {
-            this.newItemStock.barcode = this.data[index][0]
-            this.newItemStock.productname = this.data[index][1]
-            this.newItemStock.quantity = this.data[index][7]
-            this.newItemStock.price = this.data[index][5]
-            this.newItemStock.total_price = this.data[index][11]
-            this.items.push(this.newItemStock);
-            // console.log(this.items);
-            this.newItemStock = {};
+        this.items = [];
+        this.newItemStock = {};
+
+        for (var index in this.data) {
+          if (index != "0") {
+            if (this.data[index][1] != "") {
+              this.BundleProductMap = this.BundleProductList.filter(data => data.bundle_name === this.data[index][1])
+              if (this.BundleProductMap.length > 0) {
+                this.newItemStock.barcode = this.data[index][0]
+                this.newItemStock.productId = this.BundleProductMap[0].id
+                this.newItemStock.productname = this.data[index][1]
+                this.newItemStock.quantity = this.data[index][7]
+                this.newItemStock.price = this.data[index][5]
+                this.newItemStock.total_price = this.data[index][11]
+                this.newItemStock.uom_id = this.BundleProductMap[0].uom_id
+                this.items.push(this.newItemStock);
+                // console.log(this.newItemStock);
+                // console.log(this.items);
+                this.newItemStock = {};
+              } else {
+
+              }
+              //this.BundleProductList.filter = this.data[index][1]
+              // console.log(this.data[index][1])
+              // console.log(this.BundleProductMap)
+            }
+
+
 
           }
+          this.linecount = index;
+          // console.log(index); // prints indexes: 0, 1, 2, 3
 
-
-
+          // console.log(this.data[index]); // prints elements: 10, 20, 30, 40
         }
-        this.linecount = index;
-        // console.log(index); // prints indexes: 0, 1, 2, 3
 
-        // console.log(this.data[index]); // prints elements: 10, 20, 30, 40
-      }
-
-      // this.data.map(res => {
-      //   if (res[0] === "no") {
-      //     console.log(res[0]);
-      //   } else {
-      //     console.log(res[0]);
-      //   }
-      // })
-    };
-    reader.readAsBinaryString(target.files[0]);
+        // this.data.map(res => {
+        //   if (res[0] === "no") {
+        //     console.log(res[0]);
+        //   } else {
+        //     console.log(res[0]);
+        //   }
+        // })
+      };
+      reader.readAsBinaryString(target.files[0]);
+    }
   }
 
   btnColor() {

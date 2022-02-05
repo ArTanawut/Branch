@@ -23,6 +23,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ModalModule, BsModalService } from 'ngx-bootstrap/modal';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { TextMaskModule } from 'angular2-text-mask';
+import { NgNumberFormatterModule } from 'ng-number-formatter';
 // import { DataTableDirective } from 'angular-datatables';
 
 // import { SelectModule } from 'ng-select';
@@ -96,6 +98,8 @@ import { ExportRawByimportComponent } from './liberty/raw-material-inventory/exp
     BrowserAnimationsModule,
     ModalModule,
     NgbDatepickerModule,
+    TextMaskModule,
+    NgNumberFormatterModule,
     // DataTableDirective,
     // SelectModule,
     // SelectOptionService,
