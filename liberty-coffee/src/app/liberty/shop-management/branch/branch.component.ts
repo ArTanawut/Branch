@@ -45,6 +45,9 @@ export class BranchComponent implements OnInit {
   Quantity_2;
   private myEventSubscription: any;
   private myEventSubscription1: any;
+  strRoleId: string;
+  strUserID: string;
+  strBranchId: string;
 
 
 
@@ -56,26 +59,58 @@ export class BranchComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.RoleId = 1
-    console.log("Ok")
+    var userid = localStorage.getItem('userid')
+    var branchid = localStorage.getItem('branchid')
+    var roleid = localStorage.getItem('roleid');
+
+    this.strUserID = userid
+    this.strBranchId = branchid
+    this.RoleId = roleid
+
     this.getBranchs()
-
-
-
   }
 
   getBranchs() {
     this.myEventSubscription = this.apiService.restApiGet("http://localhost:8080/shop/getBranch")
       .subscribe(
         data => {
-          //this.uoms = (data as any).data ;
-          this.branchs = data['data'];
-          // console.log(this.uoms)
-          this.dtTrigger.next();
+          if (this.RoleId == "1") {
+            //this.uoms = (data as any).data ;
+            this.branchs = data['data'];
+            // console.log(this.uoms)
+            this.dtTrigger.next();
 
-          $(function () {
-            $('data').DataTable();
-          });
+            $(function () {
+              $('data').DataTable();
+            });
+          } else if (this.RoleId == "2") {
+            this.branchs = data['data'];
+
+            console.log(this.RoleId)
+            this.branchs = this.branchs.filter(data => data.id === this.strBranchId)
+            console.log(this.branchs)
+            if (this.branchs.length > 0) {
+              this.Branch_ID = this.branchs[0].id
+              this.Branch_Name = this.branchs[0].name
+              this.Address = this.branchs[0].address1
+              this.Time_Open = this.branchs[0].open_time
+              this.Time_Close = this.branchs[0].close_time
+              this.UOM_Active = this.ConverInttoBool(this.branchs[0].active)
+              this.UOM_Active_ID = this.branchs[0].active
+              // this.newItemStock.barcode = this.data[index][0]
+              // this.newItemStock.productId = this.BundleProductMap[0].id
+              // this.newItemStock.productname = this.data[index][1]
+              // this.newItemStock.quantity = this.data[index][7]
+              // this.newItemStock.price = this.data[index][5]
+              // this.newItemStock.total_price = this.data[index][11]
+              // this.newItemStock.uom_id = this.BundleProductMap[0].uom_id
+              // this.items.push(this.newItemStock);
+              // this.newItemStock = {};
+            }
+          }
+
+
+
           // console.log(this.ddlRole)
         },
         error => {
@@ -83,22 +118,6 @@ export class BranchComponent implements OnInit {
         });
 
 
-  }
-
-  getRoles1() {
-    this.apiService.restApiGet("http://localhost:8080/role/getRoles")
-      .subscribe(
-        data => {
-          this.uoms = data['data'];
-
-          $(function () {
-            $('data').DataTable();
-          });
-          // console.log(this.ddlRole)
-        },
-        error => {
-          //console.log(error);
-        });
   }
 
   ngOnDestroy(): void {
@@ -127,33 +146,61 @@ export class BranchComponent implements OnInit {
     this.UOM_Active = true;
   }
 
-  SaveUOM() {
-    // console.log(this.UOM_Name)
-    // console.log(this.UOM_Active)
-    // this.idupdate = this.RoleId
-    // if (this.RoleId === "") {
-    console.log("Save UOM")
-    let json = {
-      name: this.UOM_Name,
-      active: this.ConverBooltoInt(this.UOM_Active),
-      user: "system",
+  SaveBranch() {
+    console.log("Save Branch")
+    if (this.Branch_ID == "" || this.Branch_ID == undefined) {
+      let json = {
+        name: this.Branch_Name,
+        address1: this.Address,
+        open_time: this.Time_Open,
+        close_time: this.Time_Close,
+        active: this.ConverBooltoInt(this.UOM_Active),
+        user: parseInt(this.strUserID),
+      }
+      // console.log(JSON.stringify(json))
+      this.apiService.restApiSendParm("http://localhost:8080/shop/addBranch", JSON.stringify(json))
+        .subscribe(
+          response => {
+            if (response) {
+              Swal.fire('เพิ่มข้อมูลสาขาเรียบร้อยแล้ว', '', 'success');
+              // this.getUOMs();
+            } else {
+              // console.log("Login Fail")
+              Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลสาขาได้', 'error');
+            }
+          },
+          error => {
+            // console.log(error)
+            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลสาขาได้', 'error');
+          });
+    } else {
+      let json = {
+        id: parseInt(this.Branch_ID),
+        name: this.Branch_Name,
+        address1: this.Address,
+        open_time: this.Time_Open,
+        close_time: this.Time_Close,
+        active: this.ConverBooltoInt(this.UOM_Active),
+        user: parseInt(this.strUserID),
+      }
+      // console.log(JSON.stringify(json))
+      this.apiService.restApiSendParm("http://localhost:8080/shop/updateBranch", JSON.stringify(json))
+        .subscribe(
+          response => {
+            if (response) {
+              Swal.fire('แก้ไขข้อมูลสาขาเรียบร้อยแล้ว', '', 'success');
+              // this.getUOMs();
+            } else {
+              // console.log("Login Fail")
+              Swal.fire('', 'ไม่สามารถแก้ไขข้อมูลสาขาได้', 'error');
+            }
+          },
+          error => {
+            // console.log(error)
+            Swal.fire('', 'ไม่สามารถแก้ไขข้อมูลสาขาได้', 'error');
+          });
     }
-    // console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/uom/addUOM", JSON.stringify(json))
-      .subscribe(
-        response => {
-          if (response) {
-            Swal.fire('เพิ่มข้อมูลหน่วยนับเรียบร้อยแล้ว', '', 'success');
-            // this.getUOMs();
-          } else {
-            // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลหน่วยนับได้', 'error');
-          }
-        },
-        error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลหน่วยนับได้', 'error');
-        });
+
   }
 
   UpdateUOM() {
@@ -298,9 +345,6 @@ export class BranchComponent implements OnInit {
           });
       this.modalRef.hide();
     }
-    // this.idupdate = this.RoleId
-    // if (this.RoleId === "") {
-    //console.log("Save UOMT")
 
   }
 

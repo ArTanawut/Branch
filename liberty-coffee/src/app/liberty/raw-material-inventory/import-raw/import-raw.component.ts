@@ -7,6 +7,7 @@ import 'sweetalert2/src/sweetalert2.scss';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'rxjs/add/operator/map';
 import { NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { async } from 'rxjs/internal/scheduler/async';
 
 @Injectable()
 export class CustomDateParserFormatter extends NgbDateParserFormatter {
@@ -125,6 +126,10 @@ export class ImportRawComponent implements OnInit {
     console.log("Destroy")
   }
 
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   getStocks() {
     let json = {
       type_id: 1
@@ -234,11 +239,13 @@ export class ImportRawComponent implements OnInit {
               //console.log(JSON.stringify(json))
               this.apiService.restApiSendParm("http://localhost:8080/stock/addStock", JSON.stringify(json))
                 .subscribe(
-                  response => {
-                    if (response) {
-                      this.DeleteStockLine(response['data'][0].stock_header_id);
+                  async response1 => {
+                    if (response1) {
+                      this.DeleteStockLine(response1['data'][0].stock_header_id);
+                      await this.delay(2000);
+                      this.CalculateRemaining(response['data'][0].new_docno);
 
-                      Swal.fire('เพิ่มข้อมูลนำเข้าวัตถุดิบเรียบร้อยแล้ว', '', 'success');
+                      // Swal.fire('เพิ่มข้อมูลนำเข้าวัตถุดิบเรียบร้อยแล้ว', '', 'success');
                       // this.getProducts();
                     } else {
                       // console.log("Login Fail")
@@ -279,12 +286,13 @@ export class ImportRawComponent implements OnInit {
 
       this.apiService.restApiSendParm("http://localhost:8080/stock/updateStock", JSON.stringify(json))
         .subscribe(
-          response => {
+          async response => {
             if (response) {
               console.log("updateStock Complete")
               this.DeleteStockLine(this.Stock_ID);
-
-              Swal.fire('แก้ไขข้อมูลนำเข้าวัตถุดิบเรียบร้อยแล้ว', '', 'success');
+              await this.delay(2000);
+              this.CalculateRemaining(this.doc_no);
+              // Swal.fire('แก้ไขข้อมูลนำเข้าวัตถุดิบเรียบร้อยแล้ว', '', 'success');
               // this.getProducts();
             } else {
               // console.log("Login Fail")
@@ -408,6 +416,34 @@ export class ImportRawComponent implements OnInit {
         });
 
     // this.ngOnDestroy();
+  }
+
+  CalculateRemaining(p_doc_no: string) {
+    // console.log(sale_header_id)
+    console.log("Start CalculateRemaining")
+    console.log("doc_no :" + p_doc_no)
+    let json = {
+      doc_no: p_doc_no
+    }
+
+    // console.log(JSON.stringify(json))
+    this.apiService.restApiSendParm("http://localhost:8080/stock/calculateStockRemaining", JSON.stringify(json))
+      .subscribe(
+        response => {
+          if (response) {
+
+            Swal.fire('เพิ่มข้อมูลนำเข้าวัตถุดิบเรียบร้อยแล้ว', '', 'success');
+            // this.getProducts();
+          } else {
+            // console.log("Login Fail")
+            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          }
+        },
+        error => {
+          // console.log(error)
+          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+        });
+    console.log("End CalculateRemaining")
   }
 
   openModal(template: TemplateRef<any>) {

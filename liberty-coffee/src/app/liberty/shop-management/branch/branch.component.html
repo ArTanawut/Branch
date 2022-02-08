@@ -49,14 +49,14 @@
           <div class="col-6">
             <div class="form-group">
               <label for="inputAddress">ชื่อสาขา</label>
-              <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Branch_Name"
+              <input type="text" class="form-control" autocomplete="off" id="inputBranch" [(ngModel)]="Branch_Name"
                 [ngModelOptions]="{standalone: true}">
             </div>
           </div>
           <div class="col-6">
             <div class="form-group">
               <label for="inputAddress">ที่อยู่</label>
-              <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Address"
+              <input type="text" class="form-control" autocomplete="off" id="inputAddress" [(ngModel)]="Address"
                 [ngModelOptions]="{standalone: true}">
             </div>
           </div>
@@ -91,8 +91,8 @@
         </div>
         <div class="text-right" style="padding-top: 100px;">
           <hr width="100%">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>&nbsp;
-          <button type="button" class="btn btn-primary">บันทึก</button>
+          <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>&nbsp; -->
+          <button type="button" class="btn btn-primary" (click)="SaveBranch()">บันทึก</button>
         </div>
       </app-card>
     </div>
@@ -158,7 +158,7 @@
         <hr width="100%">
         <button type="button" class="btn btn-secondary" data-dismiss="modal"
           (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
-        <button type="button" class="btn btn-primary" (click)="SaveUOM();modalRef.hide()">บันทึก</button>
+        <button type="button" class="btn btn-primary" (click)="SaveBranch();modalRef.hide()">บันทึก</button>
       </div>
     </form>
   </div>

@@ -2,10 +2,12 @@
   <div class="col-sm-12">
     <app-card [hidHeader]="true" cardClass="card-datatable" [options]="false">
       <div style="padding-bottom: 10px;">
-        <button type="button" class="btn btn-success" data-toggle="modal" (click)="openModal(Template);onNewUser()" >เพิ่มผู้ใช้งาน</button>
+        <button type="button" class="btn btn-success" data-toggle="modal"
+          (click)="openModal(Template);onNewUser()">เพิ่มผู้ใช้งาน</button>
       </div>
       <div class="table-responsive">
-        <table *ngIf="userlist" datatable="ng" datatable [dtOptions]="dtRouterLinkOptions" class="table table-striped table-bordered table-hover">
+        <table *ngIf="userlist" datatable="ng" datatable [dtOptions]="dtRouterLinkOptions"
+          class="table table-striped table-bordered table-hover">
           <thead>
             <tr>
               <th>#</th>
@@ -14,26 +16,33 @@
               <th>สิทธิ์</th>
               <th>สาขา</th>
               <th>เปิดใช้งาน</th>
-              <th>วันที่สร้าง</th>
-              <th class="text-right">Action</th>
+              <th class="text-right"></th>
             </tr>
           </thead>
           <tbody *ngIf="userlist?.length != 0">
-              <tr *ngFor="let user of userlist">
-                  <td>{{ user.no }}</td>
-                  <td>{{ user.fullName }}</td>
-                  <td>{{ user.username }}</td>
-                  <td>{{ user.role_name }}</td>
-                  <td>{{ user.branch_name }}</td>
-                  <td>{{ user.active_flag }}</td>
-                  <td>{{ user.create_date }}</td>
-                  <td class="text-center">
-                      <button class="btn btn-outline-primary btn-sm" data-toggle="modal"
-                      (click)="editModal(Template,user)">View</button>
-                      &nbsp;<button class="btn btn-outline-danger btn-sm" data-toggle="modal"
-                      (click)="deleteModal(TemplateDelete,user)">Delete</button>
-                  </td>
-              </tr>
+            <tr *ngFor="let user of userlist">
+              <td>{{ user.no }}</td>
+              <td>{{ user.fullName }}</td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.role_name }}</td>
+              <td>{{ user.branch_name }}</td>
+              <td *ngIf="user.active_flag=='Active';else tpl">
+                <i class="fa fa-check"></i>
+              </td>
+              <ng-template #tpl>
+                <td><i class="fa fa-times"></i></td>
+              </ng-template>
+              <!-- <td>{{ user.active_flag }}</td> -->
+              <td class="text-center">
+                <button type="button" class="btn btn-icon" (click)="editModal(Template,user);"
+                  style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
+                  <i class="fa fa-pen"></i></button>
+                &nbsp;
+                <button type="button" class="btn btn-icon" (click)="deleteModal(TemplateDelete,user);"
+                  style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
+                  <i class="fa fa-trash"></i></button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -43,82 +52,89 @@
 
 <ng-template #Template>
   <div class="modal-header">
-      <h4 class="modal-title pull-left">เพิ่ม/แก้ไข ผู้ใช้งาน</h4>
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
-          <span aria-hidden="true">&times;</span>
-      </button>
+    <h4 class="modal-title pull-left">เพิ่ม/แก้ไข ผู้ใช้งาน</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
   </div>
   <div class="modal-body">
-      <form>
-        <div class="row">
-          <div class="col-12">
-            <div class="form-group">
-              <label for="inputAddress">ชื่อ</label>
-              <input type="text" class="form-control" id="inputAddress" placeholder="ชื่อ"
-              [(ngModel)]="name" [ngModelOptions]="{standalone: true}">
+    <form>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <label for="inputAddress">ชื่อ</label>
+            <input type="text" class="form-control" id="inputAddress" placeholder="ชื่อ" [(ngModel)]="name"
+              [ngModelOptions]="{standalone: true}">
+          </div>
+          <div class="form-group">
+            <label for="inputAddress">นามสกุล</label>
+            <input type="text" class="form-control" id="inputAddress" placeholder="นามสกุล" [(ngModel)]="lastname"
+              [ngModelOptions]="{standalone: true}">
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label for="inputEmail4">Username</label>
+              <input type="text" class="form-control" id="inputEmail4" placeholder="Username" [(ngModel)]="username"
+                [ngModelOptions]="{standalone: true}">
             </div>
-            <div class="form-group">
-              <label for="inputAddress">นามสกุล</label>
-              <input type="text" class="form-control" id="inputAddress" placeholder="นามสกุล" [(ngModel)]="lastname" [ngModelOptions]="{standalone: true}" >
+            <div class="form-group col-md-6">
+              <label for="inputPassword4">Password</label>
+              <input type="password" class="form-control" id="inputPassword4" placeholder="Password"
+                [(ngModel)]="password" [ngModelOptions]="{standalone: true}">
             </div>
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="inputEmail4">Username</label>
-                <input type="text" class="form-control" id="inputEmail4" placeholder="Username" [(ngModel)]="username" [ngModelOptions]="{standalone: true}">
-              </div>
-              <div class="form-group col-md-6">
-                <label for="inputPassword4">Password</label>
-                <input type="password" class="form-control" id="inputPassword4" placeholder="Password" [(ngModel)]="password" [ngModelOptions]="{standalone: true}">
-              </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label for="inputState">สิทธิ์</label>
+              <select id="inputState" class="form-control" [(ngModel)]="roleId" [ngModelOptions]="{standalone: true}">
+                <option selected></option>
+                <option *ngFor="let result of ddlRole" [value]="result.role_id">
+                  {{result.role_name}}</option>
+              </select>
             </div>
-            <div class="form-row">
-              <div class="form-group col-md-4">
-                <label for="inputState">สิทธิ์</label>
-                <select id="inputState" class="form-control" [(ngModel)]="roleId"  [ngModelOptions]="{standalone: true}">
-                  <option selected></option>
-                  <option *ngFor="let result of ddlRole" [value]="result.role_id" >
-                    {{result.role_name}}</option>
-                </select>
-              </div>
-              <div class="form-group col-md-5">
-                <label for="inputState">สาขา</label>
-                <select id="inputState" class="form-control" [(ngModel)]="branchId"  [ngModelOptions]="{standalone: true}">
-                  <option selected></option>
-                  <option *ngFor="let result of ddlBranch" [value]="result.branch_id" >
-                    {{result.branch_name}}</option>
-                </select>
-              </div>
-              <div class="form-group col-md-3">
-                <label for="inputState">Active</label>
-                <select id="inputState" class="form-control" [(ngModel)]="activeFlag"  [ngModelOptions]="{standalone: true}">
-                  <option selected></option>
-                  <option value="1">Active</option>
-                  <option value="0">InActive</option>
-                </select>
-              </div>
+            <div class="form-group col-md-5">
+              <label for="inputState">สาขา</label>
+              <select id="inputState" class="form-control" [(ngModel)]="branchId" [ngModelOptions]="{standalone: true}">
+                <option selected></option>
+                <option *ngFor="let result of ddlBranch" [value]="result.branch_id">
+                  {{result.branch_name}}</option>
+              </select>
+            </div>
+            <div class="form-group col-md-3">
+              <label for="inputState">Active</label>
+              <select id="inputState" class="form-control" [(ngModel)]="activeFlag"
+                [ngModelOptions]="{standalone: true}">
+                <option selected></option>
+                <option value="1">Active</option>
+                <option value="0">InActive</option>
+              </select>
             </div>
           </div>
         </div>
-        <div class="text-right">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="modalRef.hide()">Close</button>&nbsp;
-            <button type="button" class="btn btn-primary" (click)="SaveUser();modalRef.hide()">Save changes</button>
-          </div>
-      </form>
+      </div>
+      <div class="text-right">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+          (click)="modalRef.hide()">Close</button>&nbsp;
+        <button type="button" class="btn btn-primary" (click)="SaveUser();modalRef.hide()">Save changes</button>
+      </div>
+    </form>
   </div>
 </ng-template>
 
 <ng-template #TemplateDelete>
   <div class="modal-header">
-      <h4 class="modal-title pull-left">Delete</h4>
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
-          <span aria-hidden="true">&times;</span>
-      </button>
+    <h4 class="modal-title pull-left">Delete</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
   </div>
   <div class="modal-body text-center">
     ต้องการลบผู้ใช้งานหรือไม่?
     <div style="margin-top:25px">
-      <button type="button" class="btn btn-default" (click)="deleteUser()" (mouseover)="btnColor()" id="btn-yes" >Yes</button>
-      <button type="button" class="btn btn-primary" (click)="decline()" (mouseover)="btnColorNo()" id="btn-no" >No</button>
+      <button type="button" class="btn btn-default" (click)="deleteUser()" (mouseover)="btnColor()"
+        id="btn-yes">Yes</button>
+      <button type="button" class="btn btn-primary" (click)="decline()" (mouseover)="btnColorNo()"
+        id="btn-no">No</button>
     </div>
   </div>
 </ng-template>

@@ -38,6 +38,17 @@ export class LoginComponent implements OnInit {
         response => {
           // console.log(response)
           if (response) {
+
+            const userId = response['data'][0].userid;
+            const fullName = response['data'][0].firstname + " " + response['data'][0].lastname;
+            const roleId = response['data'][0].role_id;
+            const branchId = response['data'][0].branch_id;
+
+            localStorage.setItem('userid', userId);
+            localStorage.setItem('fullname', fullName);
+            localStorage.setItem('roleid', roleId);
+            localStorage.setItem('branchid', branchId);
+            localStorage.setItem('timeout', "600000");
             // console.log("Login Ok")
             Swal.fire('Log in Success', '', 'success');
             this.router.navigateByUrl('/dashboard')

@@ -76,6 +76,10 @@ type DocDateReq struct {
 	Doc_date string `json:"doc_date"`
 }
 
+type DocNoReq struct {
+	Doc_no string `json:"doc_no"`
+}
+
 type InsertStockReq struct {
 	Doc_no   string `json:"doc_no"`
 	Doc_date string `json:"doc_date"`
@@ -240,6 +244,26 @@ type SaleLines struct {
 }
 
 func (p *ResultsSaleLines) setErrorHandle(status int, msg string) {
+	p.Message = msg
+	p.ErrorCode = status
+}
+
+type ResultsSales struct {
+	Result    []Sales `json:"data"`
+	ErrorCode int     `json:"error_code"`
+	Message   string  `json:"message"`
+}
+
+type Sales struct {
+	Id          string `json:"id"`
+	Doc_no      string `json:"doc_no"`
+	Doc_date    string `json:"doc_date"`
+	Record      string `json:"record"`
+	Total_price string `json:"total_price"`
+	Filename    string `json:"filename"`
+}
+
+func (p *ResultsSales) setErrorHandle(status int, msg string) {
 	p.Message = msg
 	p.ErrorCode = status
 }
@@ -732,6 +756,110 @@ func (p *IdStockReq) GetSaleLines() ([]map[string]interface{}, error) {
 		p.Id}
 
 	results, err := models.ExecuteStore("CALL STC_SelectSaleline (?) ", args)
+	if err != nil {
+
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func calculateStockImport(c echo.Context) (err error) {
+	req := new(DocNoReq)
+	res := new(ResultsResSale)
+
+	res.ErrorCode = 0
+	err = c.Bind(req)
+
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+
+	results, err := req.UpdateStockImport()
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+	res.RowsAffected = results
+	return c.JSON(http.StatusOK, res)
+}
+
+func (p *DocNoReq) UpdateStockImport() (int64, error) {
+	args := []interface{}{
+		p.Doc_no}
+
+	results, err := models.ExecuteStoreNonQuery("CALL STC_CalculateImport (?) ", args)
+	if err != nil {
+		log.Println(err.Error())
+		return 0, err
+	}
+
+	return results, nil
+}
+
+func calculateStockRemaining(c echo.Context) (err error) {
+	req := new(DocNoReq)
+	res := new(ResultsResSale)
+
+	res.ErrorCode = 0
+	err = c.Bind(req)
+
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+
+	results, err := req.UpdateStockRemaining()
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+	res.RowsAffected = results
+	return c.JSON(http.StatusOK, res)
+}
+
+func (p *DocNoReq) UpdateStockRemaining() (int64, error) {
+	args := []interface{}{
+		p.Doc_no}
+
+	results, err := models.ExecuteStoreNonQuery("CALL STC_Calculate (?) ", args)
+	if err != nil {
+		log.Println(err.Error())
+		return 0, err
+	}
+
+	return results, nil
+}
+
+func getSales(c echo.Context) (err error) {
+	res := new(ResultsSales)
+	res.ErrorCode = 0
+
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+
+	results, err := GetSales()
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+	log.Println(results)
+	mapstructure.Decode(results, &res.Result)
+	return c.JSON(http.StatusOK, res)
+}
+
+func GetSales() ([]map[string]interface{}, error) {
+
+	results, err := models.ExecuteStore("CALL STC_SelectSales ", nil)
 	if err != nil {
 
 		return nil, err

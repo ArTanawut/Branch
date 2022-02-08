@@ -47,8 +47,8 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
   ],
 })
 export class ExportRawByimportComponent implements OnInit {
-
-  dtOptions: DataTables.Settings = {};
+  dtOptions: any = {};
+  // dtOptions: DataTables.Settings = {};
   dtOptionsBundle: DataTables.Settings = {};
   stocks = [];
   uomts = [];
@@ -103,10 +103,6 @@ export class ExportRawByimportComponent implements OnInit {
   data: AOA = [[1, 2], [3, 4]];
   wopts: XLSX.WritingOptions = { bookType: 'xlsx', type: 'array' };
 
-
-
-
-
   constructor(private http: HttpClient,
     private apiService: ApiService,
     private modalService: BsModalService
@@ -115,10 +111,9 @@ export class ExportRawByimportComponent implements OnInit {
   ngOnInit() {
     console.log("Ok")
     this.getStocks()
-    this.getddlUOMs();
-    this.getddlRAWs();
+    // this.getddlUOMs();
+    // this.getddlRAWs();
     this.getGetBundleProducts();
-
 
   }
 
@@ -139,12 +134,12 @@ export class ExportRawByimportComponent implements OnInit {
     console.log("Destroy")
   }
 
-  getStocks() {
-    let json = {
-      type_id: 3
-    }
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 
-    this.myEventSubscription = this.apiService.restApiSendParm("http://localhost:8080/stock/getStocks", JSON.stringify(json))
+  getStocks() {
+    this.myEventSubscription = this.apiService.restApiGet("http://localhost:8080/stock/getSales")
       .subscribe(
         data => {
           //this.products = (data as any).data ;
@@ -163,6 +158,7 @@ export class ExportRawByimportComponent implements OnInit {
 
 
   }
+
 
   getddlUOMs() {
     //confirm, unconfirm
@@ -238,24 +234,27 @@ export class ExportRawByimportComponent implements OnInit {
   }
 
   SaveData() {
+    // this.SaveSale()
     this.SaveSale()
-
-
   }
 
   SaveSale() {
     console.log("Save Sale")
     // this.doc_date = gettoday
     var date = new Date();
-    this.doc_date = { day: date.getUTCDay(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
+
+    this.doc_date = { day: date.getDate(), month: date.getMonth() + 1, year: date.getFullYear() };
     var dateuse = '0' + this.doc_date.day
     var monthuse = '0' + this.doc_date.month
+
+    console.log("dateuse = " + dateuse)
+    console.log("monthuse = " + monthuse)
 
     let json = {
       doc_date: this.doc_date.year.toString().slice(-2) + monthuse.slice(-2) + dateuse.slice(-2)
       // doc_date: "220201"
     }
-    console.log(JSON.stringify(json))
+    console.log("json genDocNo = " + JSON.stringify(json))
 
     this.apiService.restApiSendParm("http://localhost:8080/stock/genDocNo", JSON.stringify(json))
       .subscribe(
@@ -263,7 +262,7 @@ export class ExportRawByimportComponent implements OnInit {
           if (response) {
             this.StringDoc_No = response['data'][0].new_docno
             this.StringDoc_Date = this.doc_date.year.toString() + '-' + monthuse.slice(-2) + '-' + dateuse.slice(-2)
-
+            console.log("StringDoc_No = " + this.StringDoc_No)
             let jsonSale = {
               branch_id: 1,
               doc_no: response['data'][0].new_docno,
@@ -271,15 +270,21 @@ export class ExportRawByimportComponent implements OnInit {
               remarks: "",
               filename: this.Filename
             }
+            console.log("json addSaleHeader = " + JSON.stringify(json))
             this.apiService.restApiSendParm("http://localhost:8080/stock/addSaleHeader", JSON.stringify(jsonSale))
               .subscribe(
-                response => {
-                  if (response) {
+                async response1 => {
+                  if (response1) {
                     // console.log("Insert Sale Header Complete")
-                    this.AddSaleLine(response['data'][0].sale_header_id);
-                    // this.SaveStock();
-                    // Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
-                    // this.getProducts();
+                    this.AddSaleLine(response1['data'][0].sale_header_id);
+                    await this.delay(2000);
+                    // console.log("Call CalculateImport ")
+                    // console.log(response['data'][0].new_docno)
+                    this.CalculateImport(response['data'][0].new_docno);
+                    await this.delay(2000);
+                    // console.log("Call CalculateRemaining ")
+                    this.CalculateRemaining(response['data'][0].new_docno);
+
                   } else {
                     // console.log("Login Fail")
                     Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
@@ -303,7 +308,7 @@ export class ExportRawByimportComponent implements OnInit {
 
   AddSaleLine(sale_header_id: string) {
     // console.log(sale_header_id)
-    // console.log("Add Sale Line")
+    console.log("Start Add Sale Line")
     for (let i = 0; i < this.items.length; i++) {
       // console.log("Loop :" + i)
       let json = {
@@ -322,6 +327,7 @@ export class ExportRawByimportComponent implements OnInit {
         .subscribe(
           response => {
             if (response) {
+
               // this.getProducts();
             } else {
               // console.log("Login Fail")
@@ -333,6 +339,63 @@ export class ExportRawByimportComponent implements OnInit {
             Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
           });
     }
+    console.log("End Add Sale Line")
+  }
+
+  CalculateImport(p_doc_no: string) {
+    // console.log(sale_header_id)
+    console.log("Start CalculateImport")
+    console.log("doc_no :" + p_doc_no)
+    let json = {
+      doc_no: p_doc_no
+    }
+
+    // console.log(JSON.stringify(json))
+    this.apiService.restApiSendParm("http://localhost:8080/stock/calculateStockImport", JSON.stringify(json))
+      .subscribe(
+        response => {
+          if (response) {
+
+            // Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อย', '', 'success');
+            // this.getProducts();
+          } else {
+            // console.log("Login Fail")
+            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          }
+        },
+        error => {
+          // console.log(error)
+          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+        });
+    console.log("End CalculateImport")
+  }
+
+  CalculateRemaining(p_doc_no: string) {
+    // console.log(sale_header_id)
+    console.log("Start CalculateRemaining")
+    console.log("doc_no :" + p_doc_no)
+    let json = {
+      doc_no: p_doc_no
+    }
+
+    // console.log(JSON.stringify(json))
+    this.apiService.restApiSendParm("http://localhost:8080/stock/calculateStockRemaining", JSON.stringify(json))
+      .subscribe(
+        response => {
+          if (response) {
+
+            Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อย', '', 'success');
+            // this.getProducts();
+          } else {
+            // console.log("Login Fail")
+            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          }
+        },
+        error => {
+          // console.log(error)
+          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+        });
+    console.log("End CalculateRemaining")
   }
 
   SaveStock() {
@@ -454,7 +517,7 @@ export class ExportRawByimportComponent implements OnInit {
   }
 
   getStockLines() {
-    console.log("View Stock Lines")
+    console.log("View Sale Lines")
 
     let json = {
       id: parseInt(this.Stock_ID)
@@ -465,6 +528,7 @@ export class ExportRawByimportComponent implements OnInit {
       .subscribe(
         data => {
           this.items = data['data'];
+          console.log(this.items)
 
           $(function () {
             $('data').DataTable({
@@ -596,6 +660,9 @@ export class ExportRawByimportComponent implements OnInit {
         this.items = [];
         this.newItemStock = {};
 
+        var count_row: any
+        count_row = 0
+
         for (var index in this.data) {
           if (index != "0") {
             if (this.data[index][1] != "") {
@@ -612,6 +679,7 @@ export class ExportRawByimportComponent implements OnInit {
                 // console.log(this.newItemStock);
                 // console.log(this.items);
                 this.newItemStock = {};
+                count_row = count_row + 1
               } else {
 
               }
@@ -623,7 +691,7 @@ export class ExportRawByimportComponent implements OnInit {
 
 
           }
-          this.linecount = index;
+          this.linecount = count_row;
           // console.log(index); // prints indexes: 0, 1, 2, 3
 
           // console.log(this.data[index]); // prints elements: 10, 20, 30, 40

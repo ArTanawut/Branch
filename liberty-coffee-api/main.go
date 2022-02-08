@@ -121,9 +121,25 @@ func main() {
 	e.POST("stock/addSaleHeader", addSale)
 	e.POST("stock/addSaleLine", addSaleLine)
 	e.POST("stock/getSaleLine", getSaleLines)
+	e.GET("stock/getSales", getSales)
+
+	e.POST("stock/calculateStockRemaining", calculateStockRemaining)
+	e.POST("stock/calculateStockImport", calculateStockImport)
 
 	// shop
+	e.GET("shop/getShop", getShop)
+	e.POST("shop/addShop", addShop)
+	e.POST("shop/updateShop", updateShop)
+
 	e.GET("shop/getBranch", getBranchs)
+	e.POST("shop/addBranch", addBranch)
+	e.POST("shop/updateBranch", updateBranch)
+
+	// report
+	e.POST("report/getReportStocks", getReportStocks)
+	e.POST("report/getReportStockLines", getReportStockLines)
+	e.POST("report/getReportStocksFull", getReportStocksFull)
+	e.POST("report/getReportSales", getReportSales)
 
 	e.Server.Addr = fmt.Sprintf(":%d", port)
 	graceful.ListenAndServe(e.Server, time.Duration(timeout)*time.Second)

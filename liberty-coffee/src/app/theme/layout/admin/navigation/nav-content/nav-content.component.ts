@@ -20,14 +20,15 @@ export class NavContentComponent implements OnInit, AfterViewInit {
 
   @Output() onNavMobCollapse = new EventEmitter();
 
-  @ViewChild('navbarContent', {static: false}) navbarContent: ElementRef;
-  @ViewChild('navbarWrapper', {static: false}) navbarWrapper: ElementRef;
+  @ViewChild('navbarContent', { static: false }) navbarContent: ElementRef;
+  @ViewChild('navbarWrapper', { static: false }) navbarWrapper: ElementRef;
 
   constructor(public nav: NavigationItem, private zone: NgZone, private location: Location) {
     this.nextConfig = NextConfig.config;
     this.windowWidth = window.innerWidth;
 
-    this.navigation = this.nav.get();
+
+
     this.prevDisabled = 'disabled';
     this.nextDisabled = '';
     this.scrollWidth = 0;
@@ -35,6 +36,9 @@ export class NavContentComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    var roleid = localStorage.getItem('roleid');
+    this.navigation = this.nav.get(roleid);
+
     if (this.windowWidth < 992) {
       this.nextConfig['layout'] = 'vertical';
       setTimeout(() => {
@@ -58,7 +62,7 @@ export class NavContentComponent implements OnInit, AfterViewInit {
       this.nextDisabled = 'disabled';
     }
     this.prevDisabled = '';
-    if(this.nextConfig.rtlLayout) {
+    if (this.nextConfig.rtlLayout) {
       (document.querySelector('#side-nav-horizontal') as HTMLElement).style.marginRight = '-' + this.scrollWidth + 'px';
     } else {
       (document.querySelector('#side-nav-horizontal') as HTMLElement).style.marginLeft = '-' + this.scrollWidth + 'px';
@@ -72,7 +76,7 @@ export class NavContentComponent implements OnInit, AfterViewInit {
       this.prevDisabled = 'disabled';
     }
     this.nextDisabled = '';
-    if(this.nextConfig.rtlLayout) {
+    if (this.nextConfig.rtlLayout) {
       (document.querySelector('#side-nav-horizontal') as HTMLElement).style.marginRight = '-' + this.scrollWidth + 'px';
     } else {
       (document.querySelector('#side-nav-horizontal') as HTMLElement).style.marginLeft = '-' + this.scrollWidth + 'px';
@@ -99,7 +103,7 @@ export class NavContentComponent implements OnInit, AfterViewInit {
       const last_parent = up_parent.parentElement;
       if (parent.classList.contains('pcoded-hasmenu')) {
         parent.classList.add('active');
-      } else if(up_parent.classList.contains('pcoded-hasmenu')) {
+      } else if (up_parent.classList.contains('pcoded-hasmenu')) {
         up_parent.classList.add('active');
       } else if (last_parent.classList.contains('pcoded-hasmenu')) {
         last_parent.classList.add('active');
@@ -129,7 +133,7 @@ export class NavContentComponent implements OnInit, AfterViewInit {
           parent.classList.add('pcoded-trigger');
         }
         parent.classList.add('active');
-      } else if(up_parent.classList.contains('pcoded-hasmenu')) {
+      } else if (up_parent.classList.contains('pcoded-hasmenu')) {
         if (this.nextConfig['layout'] === 'vertical') {
           up_parent.classList.add('pcoded-trigger');
         }

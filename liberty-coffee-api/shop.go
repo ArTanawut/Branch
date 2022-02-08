@@ -18,6 +18,25 @@ var (
 	ctx_shop context.Context
 )
 
+type ResultsShop struct {
+	Result    []Shop `json:"data"`
+	ErrorCode int    `json:"error_code"`
+	Message   string `json:"message"`
+}
+
+type Shop struct {
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Open_time   string `json:"open_time"`
+	Close_time  string `json:"close_time"`
+}
+
+func (p *ResultsShop) setErrorHandle(status int, msg string) {
+	p.Message = msg
+	p.ErrorCode = status
+}
+
 type ResultsBranchs struct {
 	Result    []Branchs `json:"data"`
 	ErrorCode int       `json:"error_code"`
@@ -40,73 +59,62 @@ func (p *ResultsBranchs) setErrorHandle(status int, msg string) {
 	p.ErrorCode = status
 }
 
-type IdshopReq struct {
-	Id int `json:"id"`
+type InsertShopReq struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Open_time   string `json:"open_time"`
+	Close_time  string `json:"close_time"`
+	User        int    `json:"user"`
 }
 
-type ResultsshopT struct {
-	Result    []shopTs `json:"data"`
-	ErrorCode int      `json:"error_code"`
-	Message   string   `json:"message"`
+type UpdateShopReq struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Open_time   string `json:"open_time"`
+	Close_time  string `json:"close_time"`
+	User        int    `json:"user"`
 }
 
-type shopTs struct {
-	No        int     `json:"no"`
-	Id        int     `json:"id"`
-	shop_id1  int     `json:"shop_id1"`
-	Name1     string  `json:"name1"`
-	Quantity1 float32 `json:"quantity1"`
-	shop_id2  int     `json:"shop_id2"`
-	Name2     string  `json:"name2"`
-	Quantity2 float32 `json:"quantity2"`
-}
-
-func (p *ResultsshopT) setErrorHandle(status int, msg string) {
-	p.Message = msg
-	p.ErrorCode = status
-}
-
-type InsertshopReq struct {
-	Name   string `json:"name"`
-	Active int    `json:"active"`
-	User   string `json:"user"`
-}
-
-type InsertshopTReq struct {
-	shop_id1  int     `json:"shop_id1"`
-	Quantity1 float32 `json:"quantity1"`
-	shop_id2  int     `json:"shop_id2"`
-	Quantity2 float32 `json:"quantity2"`
-	Active    int     `json:"active"`
-	User      int     `json:"user"`
-}
-
-type ResultsResshop struct {
+type ResultsResShop struct {
 	RowsAffected int64  `json:"RowsAffected"`
 	ErrorCode    int    `json:"ErrorCode"`
 	Message      string `json:"Message"`
 }
 
-func (p *ResultsResshop) setErrorHandle(status int, msg string) {
+func (p *ResultsResShop) setErrorHandle(status int, msg string) {
 	p.Message = msg
 	p.ErrorCode = status
 }
 
-type UpdateshopReq struct {
-	Id     int    `json:"id"`
-	Name   string `json:"name"`
-	Active int    `json:"active"`
-	User   string `json:"user"`
+type InsertBranchReq struct {
+	Name       string `json:"name"`
+	Address1   string `json:"address1"`
+	Open_time  string `json:"open_time"`
+	Close_time string `json:"close_time"`
+	Active     int    `json:"active"`
+	User       int    `json:"user"`
 }
 
-type UpdateshopTReq struct {
-	Id        int     `json:"id"`
-	shop_id1  int     `json:"shop_id1"`
-	Quantity1 float32 `json:"quantity1"`
-	shop_id2  int     `json:"shop_id2"`
-	Quantity2 float32 `json:"quantity2"`
-	Active    int     `json:"active"`
-	User      int     `json:"user"`
+type UpdateBranchReq struct {
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	Address1   string `json:"address1"`
+	Open_time  string `json:"open_time"`
+	Close_time string `json:"close_time"`
+	Active     int    `json:"active"`
+	User       int    `json:"user"`
+}
+
+type ResultsResBranch struct {
+	RowsAffected int64  `json:"RowsAffected"`
+	ErrorCode    int    `json:"ErrorCode"`
+	Message      string `json:"Message"`
+}
+
+func (p *ResultsResBranch) setErrorHandle(status int, msg string) {
+	p.Message = msg
+	p.ErrorCode = status
 }
 
 //======================================================
@@ -134,7 +142,7 @@ func getBranchs(c echo.Context) (err error) {
 
 func GetBranchs() ([]map[string]interface{}, error) {
 
-	results, err := models.ExecuteStore("CALL SHP_SelectBranchs", nil)
+	results, err := models.ExecuteStore("CALL MNG_SelectBranchs", nil)
 	if err != nil {
 
 		return nil, err
@@ -144,12 +152,9 @@ func GetBranchs() ([]map[string]interface{}, error) {
 
 }
 
-func getshopTs(c echo.Context) (err error) {
-	req := new(IdshopReq)
-	res := new(ResultsshopT)
-
+func getShop(c echo.Context) (err error) {
+	res := new(ResultsShop)
 	res.ErrorCode = 0
-	err = c.Bind(req)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -157,7 +162,7 @@ func getshopTs(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, res)
 	}
 
-	results, err := req.GetshopTs()
+	results, err := SelectShop()
 	if err != nil {
 		log.Println(err.Error())
 		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
@@ -168,22 +173,21 @@ func getshopTs(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (p *IdshopReq) GetshopTs() ([]map[string]interface{}, error) {
-	args := []interface{}{
-		p.Id}
+func SelectShop() ([]map[string]interface{}, error) {
 
-	results, err := models.ExecuteStore("CALL shop_SelectUnitsTransfer (?) ", args)
+	results, err := models.ExecuteStore("CALL MNG_SelectShop", nil)
 	if err != nil {
 
 		return nil, err
 	}
 
 	return results, nil
+
 }
 
-func addshop(c echo.Context) (err error) {
-	req := new(InsertshopReq)
-	res := new(ResultsResshop)
+func addShop(c echo.Context) (err error) {
+	req := new(InsertShopReq)
+	res := new(ResultsResShop)
 
 	res.ErrorCode = 0
 	res.RowsAffected = 0
@@ -195,7 +199,7 @@ func addshop(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, res)
 	}
 
-	results, err := req.Insertshop()
+	results, err := req.InsertShop()
 	if err != nil {
 		log.Println(err.Error())
 		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
@@ -205,13 +209,15 @@ func addshop(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (p *InsertshopReq) Insertshop() (int64, error) {
+func (p *InsertShopReq) InsertShop() (int64, error) {
 	args := []interface{}{
 		p.Name,
-		p.Active,
+		p.Description,
+		p.Open_time,
+		p.Close_time,
 		p.User}
 
-	results, err := models.ExecuteStoreNonQuery("CALL shop_InsertUnit (?,?,?) ", args)
+	results, err := models.ExecuteStoreNonQuery("CALL MNG_InsertShop (?,?,?,?,?) ", args)
 	if err != nil {
 		log.Println(err.Error())
 		return 0, err
@@ -220,9 +226,9 @@ func (p *InsertshopReq) Insertshop() (int64, error) {
 	return results, nil
 }
 
-func addshopT(c echo.Context) (err error) {
-	req := new(InsertshopTReq)
-	res := new(ResultsResshop)
+func updateShop(c echo.Context) (err error) {
+	req := new(UpdateShopReq)
+	res := new(ResultsResShop)
 
 	res.ErrorCode = 0
 	res.RowsAffected = 0
@@ -234,7 +240,7 @@ func addshopT(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, res)
 	}
 
-	results, err := req.InsertshopT()
+	results, err := req.UpdateShop()
 	if err != nil {
 		log.Println(err.Error())
 		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
@@ -244,56 +250,16 @@ func addshopT(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (p *InsertshopTReq) InsertshopT() (int64, error) {
-	args := []interface{}{
-		p.shop_id1,
-		p.Quantity1,
-		p.shop_id2,
-		p.Quantity2,
-		p.Active,
-		p.User}
-
-	results, err := models.ExecuteStoreNonQuery("CALL shop_InsertUnitTransfer (?,?,?,?,?,?) ", args)
-	if err != nil {
-		log.Println(err.Error())
-		return 0, err
-	}
-
-	return results, nil
-}
-
-func updateshop(c echo.Context) (err error) {
-	req := new(UpdateshopReq)
-	res := new(ResultsRes)
-
-	res.ErrorCode = 0
-	res.RowsAffected = 0
-	err = c.Bind(req)
-
-	if err != nil {
-		log.Println(err.Error())
-		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
-		return c.JSON(http.StatusBadRequest, res)
-	}
-
-	results, err := req.Updateshop()
-	if err != nil {
-		log.Println(err.Error())
-		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
-		return c.JSON(http.StatusBadRequest, res)
-	}
-	res.RowsAffected = results
-	return c.JSON(http.StatusOK, res)
-}
-
-func (p *UpdateshopReq) Updateshop() (int64, error) {
+func (p *UpdateShopReq) UpdateShop() (int64, error) {
 	args := []interface{}{
 		p.Id,
 		p.Name,
-		p.Active,
+		p.Description,
+		p.Open_time,
+		p.Close_time,
 		p.User}
 
-	results, err := models.ExecuteStoreNonQuery("CALL shop_UpdateUnit (?,?,?,?) ", args)
+	results, err := models.ExecuteStoreNonQuery("CALL MNG_UpdateShop (?,?,?,?,?,?) ", args)
 	if err != nil {
 		log.Println(err.Error())
 		return 0, err
@@ -302,9 +268,9 @@ func (p *UpdateshopReq) Updateshop() (int64, error) {
 	return results, nil
 }
 
-func updateshopT(c echo.Context) (err error) {
-	req := new(UpdateshopTReq)
-	res := new(ResultsRes)
+func addBranch(c echo.Context) (err error) {
+	req := new(InsertBranchReq)
+	res := new(ResultsResBranch)
 
 	res.ErrorCode = 0
 	res.RowsAffected = 0
@@ -316,7 +282,7 @@ func updateshopT(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, res)
 	}
 
-	results, err := req.UpdateshopT()
+	results, err := req.InsertBranch()
 	if err != nil {
 		log.Println(err.Error())
 		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
@@ -326,17 +292,16 @@ func updateshopT(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (p *UpdateshopTReq) UpdateshopT() (int64, error) {
+func (p *InsertBranchReq) InsertBranch() (int64, error) {
 	args := []interface{}{
-		p.Id,
-		p.shop_id1,
-		p.Quantity1,
-		p.shop_id2,
-		p.Quantity2,
+		p.Name,
+		p.Address1,
+		p.Open_time,
+		p.Close_time,
 		p.Active,
 		p.User}
 
-	results, err := models.ExecuteStoreNonQuery("CALL shop_UpdateUnitTransfer (?,?,?,?,?,?,?) ", args)
+	results, err := models.ExecuteStoreNonQuery("CALL MNG_InsertBranch (?,?,?,?,?,?) ", args)
 	if err != nil {
 		log.Println(err.Error())
 		return 0, err
@@ -345,11 +310,12 @@ func (p *UpdateshopTReq) UpdateshopT() (int64, error) {
 	return results, nil
 }
 
-func deleteshop(c echo.Context) (err error) {
-	req := new(IdshopReq)
-	res := new(ResultsRes)
+func updateBranch(c echo.Context) (err error) {
+	req := new(UpdateBranchReq)
+	res := new(ResultsResBranch)
 
 	res.ErrorCode = 0
+	res.RowsAffected = 0
 	err = c.Bind(req)
 
 	if err != nil {
@@ -358,7 +324,7 @@ func deleteshop(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, res)
 	}
 
-	results, err := req.Deleteshop()
+	results, err := req.UpdateBranch()
 	if err != nil {
 		log.Println(err.Error())
 		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
@@ -368,47 +334,17 @@ func deleteshop(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (p *IdshopReq) Deleteshop() (int64, error) {
+func (p *UpdateBranchReq) UpdateBranch() (int64, error) {
 	args := []interface{}{
-		p.Id}
+		p.Id,
+		p.Name,
+		p.Address1,
+		p.Open_time,
+		p.Close_time,
+		p.Active,
+		p.User}
 
-	results, err := models.ExecuteStoreNonQuery("CALL shop_DeleteUnit (?) ", args)
-	if err != nil {
-		log.Println(err.Error())
-		return 0, err
-	}
-
-	return results, nil
-}
-
-func deleteshopT(c echo.Context) (err error) {
-	req := new(IdshopReq)
-	res := new(ResultsRes)
-
-	res.ErrorCode = 0
-	err = c.Bind(req)
-
-	if err != nil {
-		log.Println(err.Error())
-		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
-		return c.JSON(http.StatusBadRequest, res)
-	}
-
-	results, err := req.DeleteshopT()
-	if err != nil {
-		log.Println(err.Error())
-		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
-		return c.JSON(http.StatusBadRequest, res)
-	}
-	res.RowsAffected = results
-	return c.JSON(http.StatusOK, res)
-}
-
-func (p *IdshopReq) DeleteshopT() (int64, error) {
-	args := []interface{}{
-		p.Id}
-
-	results, err := models.ExecuteStoreNonQuery("CALL shop_DeleteUnitTransfer (?) ", args)
+	results, err := models.ExecuteStoreNonQuery("CALL MNG_UpdateBranch (?,?,?,?,?,?,?) ", args)
 	if err != nil {
 		log.Println(err.Error())
 		return 0, err
