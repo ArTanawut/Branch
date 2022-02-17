@@ -5,6 +5,7 @@ import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ApiService } from '../../../../liberty/services/api.service';
 import { FormGroup, FormControl } from '@angular/forms';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -12,9 +13,6 @@ import { FormGroup, FormControl } from '@angular/forms';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
-  username;
-  password;
-  form2: FormGroup;
 
   constructor(private router: Router, private http: HttpClient, private apiService: ApiService,) {
     this.form2 = new FormGroup({
@@ -23,6 +21,10 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  username;
+  password;
+  form2: FormGroup;
+
   ngOnInit(): void {
   }
 
@@ -30,15 +32,13 @@ export class LoginComponent implements OnInit {
     // console.log(JSON.stringify(value));
   }
 
-  public onLogin(value) {
+  async onLogin(value) {
     // console.log('OK')
     // let json = { username: this.username, password: this.password }
-    this.apiService.restApiSendParm("http://localhost:8080/share/login", JSON.stringify(value))
-      .subscribe(
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/share/login", JSON.stringify(value))
+      .toPromise().then(
         response => {
-          // console.log(response)
           if (response) {
-
             const userId = response['data'][0].userid;
             const fullName = response['data'][0].firstname + " " + response['data'][0].lastname;
             const roleId = response['data'][0].role_id;
@@ -48,20 +48,29 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('fullname', fullName);
             localStorage.setItem('roleid', roleId);
             localStorage.setItem('branchid', branchId);
-            localStorage.setItem('timeout', "600000");
+            // localStorage.setItem('timeout', "600000");
             // console.log("Login Ok")
-            Swal.fire('Log in Success', '', 'success');
+            // Swal.fire('Log in Success', '', 'success');
             this.router.navigateByUrl('/dashboard')
           } else {
             // console.log("Login Fail")
-            Swal.fire('', 'Username or Password incorrect', 'error');
+            Swal.fire({
+              text: "Username or Password incorrect",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           }
+
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'Username or Password incorrect', 'error');
+          // console.log(stringify(error))
+          Swal.fire({
+            text: "Username or Password incorrect",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
-
   }
-
 }

@@ -9,6 +9,7 @@ import 'rxjs/add/operator/map';
 import { NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
 import * as XLSX from 'xlsx';
 const { read, write, utils } = XLSX;
+import { environment } from 'src/environments/environment';
 
 type AOA = any[][];
 
@@ -47,6 +48,8 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
   ],
 })
 export class ExportRawByimportComponent implements OnInit {
+  strFullName: string;
+  strUserID: string;
   dtOptions: any = {};
   // dtOptions: DataTables.Settings = {};
   dtOptionsBundle: DataTables.Settings = {};
@@ -109,11 +112,13 @@ export class ExportRawByimportComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log("Ok")
-    this.getStocks()
-    // this.getddlUOMs();
-    // this.getddlRAWs();
-    this.getGetBundleProducts();
+    // console.log("Ok")
+    var userid = localStorage.getItem('userid');
+    var fullname = localStorage.getItem('fullname')
+    this.strFullName = fullname
+    this.strUserID = userid
+
+    this.pageLoad()
 
   }
 
@@ -127,19 +132,20 @@ export class ExportRawByimportComponent implements OnInit {
       this.myEventSubscription.unsubscribe();
     }
 
-    if (this.myEventSubscription1) {
-      this.myEventSubscription1.unsubscribe();
-    }
-
-    console.log("Destroy")
   }
 
-  delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  pageLoad() {
+    this.getStocks()
+    this.getGetBundleProducts();
+
   }
 
   getStocks() {
-    this.myEventSubscription = this.apiService.restApiGet("http://localhost:8080/stock/getSales")
+    this.dtOptions = {
+      order: [[0, 'desc']]
+    };
+
+    this.myEventSubscription = this.apiService.restApiGet(environment.apiLibertyUrl + "/stock/getSales")
       .subscribe(
         data => {
           //this.products = (data as any).data ;
@@ -147,9 +153,9 @@ export class ExportRawByimportComponent implements OnInit {
           // console.log(this.products)
           this.dtTrigger.next();
 
-          $(function () {
-            $('data').DataTable();
-          });
+          // $(function () {
+          //   $('data').DataTable();
+          // });
           // console.log(this.ddlRole)
         },
         error => {
@@ -162,7 +168,7 @@ export class ExportRawByimportComponent implements OnInit {
 
   getddlUOMs() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/share/ddlUOMs")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/share/ddlUOMs")
       .subscribe(
         data => {
           // console.log(data)
@@ -176,7 +182,7 @@ export class ExportRawByimportComponent implements OnInit {
 
   getddlRAWs() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/share/ddlRAWs")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/share/ddlRAWs")
       .subscribe(
         data => {
           // console.log(data)
@@ -190,7 +196,7 @@ export class ExportRawByimportComponent implements OnInit {
 
   getGetBundleProducts() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/stock/GetBundleProducts")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/stock/GetBundleProducts")
       .subscribe(
         data => {
           // console.log(data)
@@ -234,11 +240,22 @@ export class ExportRawByimportComponent implements OnInit {
   }
 
   SaveData() {
-    // this.SaveSale()
-    this.SaveSale()
+    Swal.fire({
+      // title: 'Are you sure?',
+      text: "ต้องการนำออกวัตถุดิบหรือไม่?",
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes'
+    }).then((result) => {
+      if (result.value) {
+        this.SaveSale()
+      }
+    })
   }
 
-  SaveSale() {
+  async SaveSale() {
     console.log("Save Sale")
     // this.doc_date = gettoday
     var date = new Date();
@@ -247,22 +264,22 @@ export class ExportRawByimportComponent implements OnInit {
     var dateuse = '0' + this.doc_date.day
     var monthuse = '0' + this.doc_date.month
 
-    console.log("dateuse = " + dateuse)
-    console.log("monthuse = " + monthuse)
+    // console.log("dateuse = " + dateuse)
+    // console.log("monthuse = " + monthuse)
 
     let json = {
       doc_date: this.doc_date.year.toString().slice(-2) + monthuse.slice(-2) + dateuse.slice(-2)
       // doc_date: "220201"
     }
-    console.log("json genDocNo = " + JSON.stringify(json))
+    // console.log("json genDocNo = " + JSON.stringify(json))
 
-    this.apiService.restApiSendParm("http://localhost:8080/stock/genDocNo", JSON.stringify(json))
-      .subscribe(
-        response => {
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/genDocNo", JSON.stringify(json))
+      .toPromise().then(
+        async response => {
           if (response) {
             this.StringDoc_No = response['data'][0].new_docno
             this.StringDoc_Date = this.doc_date.year.toString() + '-' + monthuse.slice(-2) + '-' + dateuse.slice(-2)
-            console.log("StringDoc_No = " + this.StringDoc_No)
+            // console.log("StringDoc_No = " + this.StringDoc_No)
             let jsonSale = {
               branch_id: 1,
               doc_no: response['data'][0].new_docno,
@@ -270,43 +287,67 @@ export class ExportRawByimportComponent implements OnInit {
               remarks: "",
               filename: this.Filename
             }
-            console.log("json addSaleHeader = " + JSON.stringify(json))
-            this.apiService.restApiSendParm("http://localhost:8080/stock/addSaleHeader", JSON.stringify(jsonSale))
-              .subscribe(
+            // console.log("json addSaleHeader = " + JSON.stringify(json))
+            await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/addSaleHeader", JSON.stringify(jsonSale))
+              .toPromise().then(
                 async response1 => {
                   if (response1) {
-                    // console.log("Insert Sale Header Complete")
-                    this.AddSaleLine(response1['data'][0].sale_header_id);
-                    await this.delay(2000);
-                    // console.log("Call CalculateImport ")
-                    // console.log(response['data'][0].new_docno)
-                    this.CalculateImport(response['data'][0].new_docno);
-                    await this.delay(2000);
-                    // console.log("Call CalculateRemaining ")
-                    this.CalculateRemaining(response['data'][0].new_docno);
-
+                    await this.AddSaleLine(response1['data'][0].sale_header_id);
+                    await this.CalculateImport(response['data'][0].new_docno);
+                    await this.CalculateRemaining(response['data'][0].new_docno);
+                    Swal.fire({
+                      text: "เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว",
+                      icon: 'success',
+                      confirmButtonColor: '#3085d6',
+                      confirmButtonText: 'OK'
+                    }).then((result) => {
+                      if (result.value) {
+                        // console.log("ngOnInit Again")
+                        this.ngOnInit();
+                      }
+                    });
                   } else {
-                    // console.log("Login Fail")
-                    Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+                    console.log(JSON.stringify(response1))
+                    Swal.fire({
+                      text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+                      icon: 'error',
+                      confirmButtonColor: '#3085d6',
+                      confirmButtonText: 'OK'
+                    })
                   }
                 },
                 error => {
-                  // console.log(error)
-                  Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+                  console.log(JSON.stringify(error))
+                  Swal.fire({
+                    text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                  })
                 });
           } else {
-            // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(response))
+            Swal.fire({
+              text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           }
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          console.log(JSON.stringify(error))
+          Swal.fire({
+            text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
 
   }
 
-  AddSaleLine(sale_header_id: string) {
+  async AddSaleLine(sale_header_id: string) {
     // console.log(sale_header_id)
     console.log("Start Add Sale Line")
     for (let i = 0; i < this.items.length; i++) {
@@ -323,26 +364,36 @@ export class ExportRawByimportComponent implements OnInit {
       }
 
       // console.log(JSON.stringify(json))
-      this.apiService.restApiSendParm("http://localhost:8080/stock/addSaleLine", JSON.stringify(json))
-        .subscribe(
+      await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/addSaleLine", JSON.stringify(json))
+        .toPromise().then(
           response => {
             if (response) {
 
               // this.getProducts();
             } else {
-              // console.log("Login Fail")
-              Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+              console.log(JSON.stringify(response))
+              Swal.fire({
+                text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              })
             }
           },
           error => {
-            // console.log(error)
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(error))
+            Swal.fire({
+              text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           });
     }
     console.log("End Add Sale Line")
   }
 
-  CalculateImport(p_doc_no: string) {
+  async CalculateImport(p_doc_no: string) {
     // console.log(sale_header_id)
     console.log("Start CalculateImport")
     console.log("doc_no :" + p_doc_no)
@@ -351,26 +402,36 @@ export class ExportRawByimportComponent implements OnInit {
     }
 
     // console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/calculateStockImport", JSON.stringify(json))
-      .subscribe(
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/calculateStockImport", JSON.stringify(json))
+      .toPromise().then(
         response => {
           if (response) {
 
             // Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อย', '', 'success');
             // this.getProducts();
           } else {
-            // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(response))
+            Swal.fire({
+              text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           }
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          console.log(JSON.stringify(error))
+          Swal.fire({
+            text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
     console.log("End CalculateImport")
   }
 
-  CalculateRemaining(p_doc_no: string) {
+  async CalculateRemaining(p_doc_no: string) {
     // console.log(sale_header_id)
     console.log("Start CalculateRemaining")
     console.log("doc_no :" + p_doc_no)
@@ -379,21 +440,31 @@ export class ExportRawByimportComponent implements OnInit {
     }
 
     // console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/calculateStockRemaining", JSON.stringify(json))
-      .subscribe(
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/calculateStockRemaining", JSON.stringify(json))
+      .toPromise().then(
         response => {
           if (response) {
 
-            Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อย', '', 'success');
+            // Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อย', '', 'success');
             // this.getProducts();
           } else {
-            // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(response))
+            Swal.fire({
+              text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           }
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          console.log(JSON.stringify(error))
+          Swal.fire({
+            text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
     console.log("End CalculateRemaining")
   }
@@ -413,10 +484,10 @@ export class ExportRawByimportComponent implements OnInit {
       remarks: "",
       draft: 0,
       filename: this.Filename,
-      user: 9,
+      user: parseInt(this.strUserID),
     }
     // console.log(JSON.stringify(jsonStock))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/addStock", JSON.stringify(jsonStock))
+    this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/addStock", JSON.stringify(jsonStock))
       .subscribe(
         response => {
           if (response) {
@@ -443,7 +514,7 @@ export class ExportRawByimportComponent implements OnInit {
     }
 
     console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/deleteStockLine", JSON.stringify(json))
+    this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/deleteStockLine", JSON.stringify(json))
       .subscribe(
         response => {
           if (response) {
@@ -475,7 +546,7 @@ export class ExportRawByimportComponent implements OnInit {
       }
 
       console.log(JSON.stringify(json))
-      this.apiService.restApiSendParm("http://localhost:8080/stock/addStockLine", JSON.stringify(json))
+      this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/addStockLine", JSON.stringify(json))
         .subscribe(
           response => {
             if (response) {
@@ -496,7 +567,7 @@ export class ExportRawByimportComponent implements OnInit {
     console.log("Delete Stock")
     let json = { id: parseInt(this.Stock_ID) }
     // console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/deleteStock", JSON.stringify(json))
+    this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/deleteStock", JSON.stringify(json))
       .subscribe(
         response => {
           if (response) {
@@ -524,7 +595,7 @@ export class ExportRawByimportComponent implements OnInit {
     }
     console.log(JSON.stringify(json))
 
-    this.apiService.restApiSendParm("http://localhost:8080/stock/getSaleLine", JSON.stringify(json))
+    this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/getSaleLine", JSON.stringify(json))
       .subscribe(
         data => {
           this.items = data['data'];

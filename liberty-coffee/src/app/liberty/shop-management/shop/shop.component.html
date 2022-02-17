@@ -1,49 +1,74 @@
 <div class="row">
   <div class="col-sm-12">
     <app-card [hidHeader]="true" cardClass="card-datatable" [options]="false">
-      <div class="row">
-        <div class="col-6">
-          <div class="form-group">
-            <label for="inputAddress">ชื่อร้านค้า</label>
-            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Shop_Name"
-              [ngModelOptions]="{standalone: true}" autocomplete="off">
+      <form #validationForm="ngForm" class="editForm" novalidate>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="inputAddress">ชื่อร้านค้า</label>
+              <input type="text" autocomplete="off" class="form-control" name="validation-Shop_Name"
+                [ngClass]="{'is-invalid': !Shop_Name.valid && (Shop_Name.dirty || Shop_Name.touched || isSubmit)}"
+                #Shop_Name="ngModel" required [(ngModel)]="formInput.Shop_Name">
+              <label *ngIf="!Shop_Name.valid && (Shop_Name.dirty || Shop_Name.touched || isSubmit)"
+                id="validation-Shop_Name-error"
+                class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกชื่อร้านค้า</label>
+
+              <!-- <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Shop_Name"
+                [ngModelOptions]="{standalone: true}" autocomplete="off"> -->
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label for="inputAddress">รายละเอียดร้านค้า</label>
+              <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Shop_Detail"
+                [ngModelOptions]="{standalone: true}" autocomplete="off">
+            </div>
           </div>
         </div>
-        <div class="col-6">
-          <div class="form-group">
-            <label for="inputAddress">รายละเอียดร้านค้า</label>
-            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Shop_Detail"
-              [ngModelOptions]="{standalone: true}" autocomplete="off">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-12">
-          <div class="form-group">
-            <label for="inputAddress">เวลาเปิด-ปิด</label>
-            <div class="row">
-              <div class="col-3">
-                <input [textMask]="{mask: maskHour}" type="text" class="form-control" placeholder="hh:mm"
-                  autocomplete="off" [(ngModel)]="Time_Open" [ngModelOptions]="{standalone: true}"
-                  style="text-align: center;" />
-              </div>
-              <div class="col-0">
-                <label for="inputAddress">-</label>
-              </div>
-              <div class="col-3">
-                <input [textMask]="{mask: maskHour}" type="text" class="form-control" placeholder="hh:mm"
-                  autocomplete="off" [(ngModel)]="Time_Close" [ngModelOptions]="{standalone: true}"
-                  style="text-align: center;" />
+        <div class="row">
+          <div class="col-12">
+            <div class="form-group">
+              <label for="inputAddress">เวลาเปิด-ปิด</label>
+              <div class="row">
+                <div class="col-3">
+                  <input type="text" autocomplete="off" class="form-control" name="validation-Time_Open"
+                    [ngClass]="{'is-invalid': !Time_Open.valid && (Time_Open.dirty || Time_Open.touched || isSubmit)}"
+                    #Time_Open="ngModel" required [(ngModel)]="formInput.Time_Open" [textMask]="{mask: maskHour}"
+                    placeholder="hh:mm" style="text-align: center;">
+                  <label *ngIf="!Time_Open.valid && (Time_Open.dirty || Time_Open.touched || isSubmit)"
+                    id="validation-Time_Open-error"
+                    class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกเวลาเปิด</label>
+
+                  <!-- <input [textMask]="{mask: maskHour}" type="text" class="form-control" placeholder="hh:mm"
+                    autocomplete="off" [(ngModel)]="Time_Open" [ngModelOptions]="{standalone: true}"
+                    style="text-align: center;" /> -->
+                </div>
+                <div class="col-0">
+                  <label for="inputAddress">-</label>
+                </div>
+                <div class="col-3">
+                  <input type="text" autocomplete="off" class="form-control" name="validation-Time_Close"
+                    [ngClass]="{'is-invalid': !Time_Close.valid && (Time_Close.dirty || Time_Close.touched || isSubmit)}"
+                    #Time_Close="ngModel" required [(ngModel)]="formInput.Time_Close" [textMask]="{mask: maskHour}"
+                    placeholder="hh:mm" style="text-align: center;">
+                  <label *ngIf="!Time_Close.valid && (Time_Close.dirty || Time_Close.touched || isSubmit)"
+                    id="validation-Time_Close-error"
+                    class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกเวลาปิด</label>
+
+                  <!-- <input [textMask]="{mask: maskHour}" type="text" class="form-control" placeholder="hh:mm"
+                    autocomplete="off" [(ngModel)]="Time_Close" [ngModelOptions]="{standalone: true}"
+                    style="text-align: center;" /> -->
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="text-right" style="padding-top: 100px;">
-        <hr width="100%">
-        <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>&nbsp; -->
-        <button type="button" class="btn btn-primary" (click)="saveShop()">บันทึก</button>
-      </div>
+        <div class="text-right" style="padding-top: 100px;">
+          <hr width="100%">
+          <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">ยกเลิก</button>&nbsp; -->
+          <button type="button" class="btn btn-primary" (click)="saveShop(validationForm)">บันทึก</button>
+        </div>
+      </form>
     </app-card>
   </div>
 </div>

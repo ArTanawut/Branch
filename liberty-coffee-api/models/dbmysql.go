@@ -17,6 +17,8 @@ var (
 	ctx context.Context
 )
 
+// func (db *DB) SetMaxOpenConns(n int)
+
 // InitialDB set config for connection to database
 func InitialDB(v *viper.Viper) error {
 
@@ -45,6 +47,12 @@ func InitialDB(v *viper.Viper) error {
 		defer DB.Close()
 		return err
 	}
+
+	// DB.SetMaxOpenConns(-1)
+	// DB.SetConnMaxLifetime(180)
+	DB.SetMaxOpenConns(50)
+	DB.SetMaxIdleConns(40)
+	// DB.SetMaxIdleConns(10)
 
 	return nil
 }
@@ -86,6 +94,7 @@ func ExecuteStore(query string, args []interface{}) ([]map[string]interface{}, e
 		}
 		tableData = append(tableData, entry)
 	}
+	defer rows.Close()
 
 	return tableData, nil
 }

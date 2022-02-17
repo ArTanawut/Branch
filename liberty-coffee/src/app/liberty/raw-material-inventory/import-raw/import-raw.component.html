@@ -36,7 +36,7 @@
                   style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
                   <i class="fa fa-pen"></i></button>
                 &nbsp;
-                <button type="button" class="btn btn-icon" (click)="deleteModal(TemplateDelete,stock);"
+                <button type="button" class="btn btn-icon" (click)="DeleteAction(stock);"
                   style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
                   <i class="fa fa-trash"></i></button>
                 &nbsp;
@@ -97,7 +97,10 @@
                   <i class="fa fa-calendar"></i>
                 </span>
               </div>
+
             </div>
+            <!-- <label id="validation-doc_date"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณาเลือกวันที่</label> -->
           </div>
         </div>
         <div class="col-5">
@@ -153,7 +156,7 @@
         </div>
         <div class="col-2">
           <div class="form-group">
-            <input type="text" class="form-control" autocomplete="off" id="inputAddress"
+            <input type="text" class="form-control" autocomplete="off" (keypress)="numberOnly($event)" id="inputAddress"
               [(ngModel)]="newItemStock.quantity" [ngModelOptions]="{standalone: true}">
           </div>
         </div>
@@ -170,7 +173,7 @@
         </div>
         <div class="col-2">
           <div class="form-group">
-            <input type="text" class="form-control" autocomplete="off" id="inputAddress"
+            <input type="text" class="form-control" autocomplete="off" (keypress)="numberOnly($event)" id="inputAddress"
               [(ngModel)]="newItemStock.price" [ngModelOptions]="{standalone: true}">
           </div>
         </div>
@@ -218,7 +221,7 @@
         <br>
         <button type="button" class="btn btn-secondary" data-dismiss="modal"
           (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
-        <button type="button" class="btn btn-primary" (click)="SaveStock();modalRef.hide()">บันทึก</button>
+        <button type="button" class="btn btn-primary" (click)="SaveStockAction()">บันทึก</button>
       </div>
     </form>
   </div>

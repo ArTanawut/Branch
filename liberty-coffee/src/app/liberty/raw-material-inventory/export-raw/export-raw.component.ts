@@ -8,6 +8,7 @@ import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'rxjs/add/operator/map';
 import { NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
 import { async } from 'rxjs/internal/scheduler/async';
+import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class CustomDateParserFormatter extends NgbDateParserFormatter {
@@ -44,7 +45,8 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
   ],
 })
 export class ExportRawComponent implements OnInit {
-
+  strFullName: string;
+  strUserID: string;
   dtOptions: DataTables.Settings = {};
   dtOptionsBundle: DataTables.Settings = {};
   stocks = [];
@@ -64,7 +66,7 @@ export class ExportRawComponent implements OnInit {
   Quantity_2;
   RAW_ID;
   ProductType: any;
-  private myEventSubscription: any;
+  private StockSubscription: any;
   private myEventSubscription1: any;
   items: Array<any> = [];
   newItemStock: any = {};
@@ -101,11 +103,13 @@ export class ExportRawComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    console.log("Ok")
-    this.getStocks()
-    this.getddlUOMs();
-    this.getddlRAWs();
+    // console.log("Ok")
+    var userid = localStorage.getItem('userid');
+    var fullname = localStorage.getItem('fullname')
+    this.strFullName = fullname
+    this.strUserID = userid
 
+    this.pageLoad()
 
   }
 
@@ -115,19 +119,17 @@ export class ExportRawComponent implements OnInit {
       this.dtTrigger.unsubscribe();
     }
 
-    if (this.myEventSubscription) {
-      this.myEventSubscription.unsubscribe();
+    if (this.StockSubscription) {
+      this.StockSubscription.unsubscribe();
     }
 
-    if (this.myEventSubscription1) {
-      this.myEventSubscription1.unsubscribe();
-    }
-
-    console.log("Destroy")
   }
 
-  delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  pageLoad() {
+    this.getStocks()
+    this.getddlUOMs()
+    this.getddlRAWs()
+
   }
 
   getStocks() {
@@ -135,7 +137,11 @@ export class ExportRawComponent implements OnInit {
       type_id: 2
     }
 
-    this.myEventSubscription = this.apiService.restApiSendParm("http://localhost:8080/stock/getStocks", JSON.stringify(json))
+    this.dtOptions = {
+      order: [[0, 'desc']]
+    };
+
+    this.StockSubscription = this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/getStocks", JSON.stringify(json))
       .subscribe(
         data => {
           //this.products = (data as any).data ;
@@ -143,9 +149,9 @@ export class ExportRawComponent implements OnInit {
           // console.log(this.products)
           this.dtTrigger.next();
 
-          $(function () {
-            $('data').DataTable();
-          });
+          // $(function () {
+          //   $('data').DataTable();
+          // });
           // console.log(this.ddlRole)
         },
         error => {
@@ -157,7 +163,7 @@ export class ExportRawComponent implements OnInit {
 
   getddlUOMs() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/share/ddlUOMs")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/share/ddlUOMs")
       .subscribe(
         data => {
           // console.log(data)
@@ -171,7 +177,7 @@ export class ExportRawComponent implements OnInit {
 
   getddlRAWs() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/share/ddlRAWs")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/share/ddlRAWs")
       .subscribe(
         data => {
           // console.log(data)
@@ -210,7 +216,41 @@ export class ExportRawComponent implements OnInit {
     }
   }
 
-  SaveStock() {
+  SaveStockAction() {
+    // console.log(this.doc_date)
+    if (this.doc_date) {
+      this.modalRef.hide();
+      if (this.ConverBooltoInt(this.chkDraft == 0)) {
+        // console.log(this.UOM_ID)
+        Swal.fire({
+          // title: 'Are you sure?',
+          text: "ต้องการนำออกวัตถุดิบหรือไม่?",
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes'
+        }).then((result) => {
+          if (result.value) {
+            this.SaveStock()
+          }
+        })
+      } else {
+        this.SaveStock()
+      }
+    } else {
+      // console.log("OK")
+      // Swal.fire({
+      //   text: "กรุณาเลือกวันที่",
+      //   icon: 'error',
+      //   confirmButtonColor: '#3085d6',
+      //   confirmButtonText: 'OK'
+      // })
+
+    }
+  }
+
+  async SaveStock() {
     console.log(this.Stock_ID)
     if (this.Stock_ID == "") { //Add Stock
       console.log("Save Stock")
@@ -222,9 +262,9 @@ export class ExportRawComponent implements OnInit {
         // doc_date: "220201"
       }
 
-      this.apiService.restApiSendParm("http://localhost:8080/stock/genDocNo", JSON.stringify(json))
-        .subscribe(
-          response => {
+      await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/genDocNo", JSON.stringify(json))
+        .toPromise().then(
+          async response => {
             if (response) {
               let json = {
                 doc_no: response['data'][0].new_docno,
@@ -234,40 +274,69 @@ export class ExportRawComponent implements OnInit {
                 remarks: this.remark,
                 draft: this.ConverBooltoInt(this.chkDraft),
                 filename: "",
-                user: 9,
+                user: parseInt(this.strUserID),
               }
               //console.log(JSON.stringify(json))
-              this.apiService.restApiSendParm("http://localhost:8080/stock/addStock", JSON.stringify(json))
-                .subscribe(
+              await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/addStock", JSON.stringify(json))
+                .toPromise().then(
                   async response1 => {
                     if (response1) {
-                      this.DeleteStockLine(response1['data'][0].stock_header_id);
-                      await this.delay(2000);
-                      this.CalculateRemaining(response['data'][0].new_docno);
-                      // Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
+                      await this.DeleteStockLine(response1['data'][0].stock_header_id);
+                      await this.CalculateRemaining(response['data'][0].new_docno);
+                      Swal.fire({
+                        text: "เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว",
+                        icon: 'success',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                      }).then((result) => {
+                        if (result.value) {
+                          // console.log("ngOnInit Again")
+                          this.ngOnInit();
+                        }
+                      });// Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
                       // this.getProducts();
                     } else {
-                      // console.log("Login Fail")
-                      Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+                      console.log(JSON.stringify(response1))
+                      Swal.fire({
+                        text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+                        icon: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                      })
                     }
                   },
                   error => {
-                    // console.log(error)
-                    Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+                    console.log(JSON.stringify(error))
+                    Swal.fire({
+                      text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+                      icon: 'error',
+                      confirmButtonColor: '#3085d6',
+                      confirmButtonText: 'OK'
+                    })
                   });
 
 
             } else {
-              // console.log("Login Fail")
-              Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+              console.log(JSON.stringify(response))
+              Swal.fire({
+                text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              })
             }
           },
           error => {
-            // console.log(error)
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(error))
+            Swal.fire({
+              text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           });
     } else {
-      console.log("Update Stock")
+      // console.log("Update Stock")
       // console.log(this.Bundle_ID)
       var dateuse = '0' + this.doc_date.day
       var monthuse = '0' + this.doc_date.month
@@ -279,59 +348,88 @@ export class ExportRawComponent implements OnInit {
         remarks: this.remark,
         draft: this.ConverBooltoInt(this.chkDraft),
         filename: "",
-        user: 9,
+        user: parseInt(this.strUserID),
       }
-      console.log(JSON.stringify(json))
+      // console.log(JSON.stringify(json))
 
-      this.apiService.restApiSendParm("http://localhost:8080/stock/updateStock", JSON.stringify(json))
-        .subscribe(
+      await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/updateStock", JSON.stringify(json))
+        .toPromise().then(
           async response => {
             if (response) {
-              console.log("updateStock Complete")
-              this.DeleteStockLine(this.Stock_ID);
-              await this.delay(2000);
-              this.CalculateRemaining(this.doc_no);
-              // Swal.fire('แก้ไขข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
-              // this.getProducts();
+              await this.DeleteStockLine(this.Stock_ID);
+              await this.CalculateRemaining(this.doc_no);
+              Swal.fire({
+                text: "แก้ไขข้อมูลนำออกวัตถุดิบเรียบร้อยแล้ว",
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              }).then((result) => {
+                if (result.value) {
+                  // console.log("ngOnInit Again")
+                  this.ngOnInit();
+                }
+              });
             } else {
-              // console.log("Login Fail")
-              Swal.fire('', 'ไม่สามารถแก้ไขข้อมูลนำออกวัตถุดิบได้', 'error');
+              console.log(JSON.stringify(response))
+              Swal.fire({
+                text: "ไม่สามารถแก้ไขข้อมูลนำออกวัตถุดิบได้",
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              })
             }
           },
           error => {
-            // console.log(error)
-            Swal.fire('', 'ไม่สามารถแก้ไขข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(error))
+            Swal.fire({
+              text: "ไม่สามารถแก้ไขข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           });
       this.modalRef.hide();
     }
   }
 
-  DeleteStockLine(stock_header_id: string) {
+  async DeleteStockLine(stock_header_id: string) {
     console.log(stock_header_id)
     console.log("Delete StockLine")
     let json = {
       id: parseInt(stock_header_id)
     }
 
-    console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/deleteStockLine", JSON.stringify(json))
-      .subscribe(
-        response => {
+    // console.log(JSON.stringify(json))
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/deleteStockLine", JSON.stringify(json))
+      .toPromise().then(
+        async response => {
           if (response) {
-            this.AddStockLine(stock_header_id)
+            // console.log("Step1")
+            await this.AddStockLine(stock_header_id)
             // this.getProducts();
           } else {
             // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถลบข้อมูลได้', 'error');
+            console.log(JSON.stringify(response))
+            Swal.fire({
+              text: "ไม่สามารถลบข้อมูลได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           }
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถลบข้อมูลได้', 'error');
+          console.log(JSON.stringify(error))
+          Swal.fire({
+            text: "ไม่สามารถลบข้อมูลได้",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
   }
 
-  AddStockLine(stock_header_id: string) {
+  async AddStockLine(stock_header_id: string) {
     console.log(stock_header_id)
     console.log("Add Stock Line")
     for (let i = 0; i < this.items.length; i++) {
@@ -346,45 +444,87 @@ export class ExportRawComponent implements OnInit {
       }
 
       console.log(JSON.stringify(json))
-      this.apiService.restApiSendParm("http://localhost:8080/stock/addStockLine", JSON.stringify(json))
-        .subscribe(
+      await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/addStockLine", JSON.stringify(json))
+        .toPromise().then(
           response => {
             if (response) {
+              // console.log("Step2")
               // this.getProducts();
             } else {
-              // console.log("Login Fail")
-              Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+              console.log(JSON.stringify(response))
+              Swal.fire({
+                text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              })
             }
           },
           error => {
-            // console.log(error)
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(error))
+            Swal.fire({
+              text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           });
     }
   }
 
-  DeleteStock() {
+  DeleteAction(stock) {
+    this.Stock_ID = stock.id;
+
+    // console.log(this.UOM_ID)
+    Swal.fire({
+      // title: 'Are you sure?',
+      text: "ต้องการลบข้อมูลการนำออกวัตถุดิบหรือไม่?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes'
+    }).then(async (result) => {
+      if (result.value) {
+        // console.log("Go to DeleteUOM")
+        await this.DeleteStock()
+        // console.log("Run Step2")
+        Swal.fire(
+          'Deleted!',
+          'ลบข้อมูลการนำออกวัตถุดิบเรียบร้อยแล้ว',
+          'success'
+        ).then((result1) => {
+          if (result1.value) {
+            // console.log("Go to ngOninit")
+            this.ngOnInit()
+          }
+        })
+      }
+    })
+  }
+
+  async DeleteStock() {
     console.log("Delete Stock")
     let json = { id: parseInt(this.Stock_ID) }
     // console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/deleteStock", JSON.stringify(json))
-      .subscribe(
-        response => {
-          if (response) {
-
-            this.DeleteStockLine(this.Stock_ID);
-            Swal.fire('ลบข้อมูลการนำออกวัตถุดิบเรียบร้อยแล้ว', '', 'success');
-          } else {
-            // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถลบข้อมูลการนำออกวัตถุดิบได้', 'error');
-          }
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/deleteStock", JSON.stringify(json))
+      .toPromise().then(
+        data => {
+          // console.log("Run Step1")
+          // console.log("Delete UOMT Success")
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถลบข้อมูลการนำออกวัตถุดิบได้', 'error');
+          console.log(JSON.stringify(json))
+          console.log(JSON.stringify(error))
+          Swal.fire({
+            text: "ไม่สามารถลบข้อมูลการนำออกวัตถุดิบได้",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
 
-    this.modalRef.hide();
+    // this.modalRef.hide();
   }
 
   getStockLines() {
@@ -395,17 +535,17 @@ export class ExportRawComponent implements OnInit {
     }
     console.log(JSON.stringify(json))
 
-    this.apiService.restApiSendParm("http://localhost:8080/stock/getStockLine", JSON.stringify(json))
+    this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/getStockLine", JSON.stringify(json))
       .subscribe(
         data => {
           this.items = data['data'];
 
-          $(function () {
-            $('data').DataTable({
-              // paging: false,
-              // searching: false
-            });
-          });
+          // $(function () {
+          //   $('data').DataTable({
+          //     // paging: false,
+          //     // searching: false
+          //   });
+          // });
 
           this.dtTrigger.next();
           // console.log(this.ddlRole)
@@ -417,7 +557,7 @@ export class ExportRawComponent implements OnInit {
     // this.ngOnDestroy();
   }
 
-  CalculateRemaining(p_doc_no: string) {
+  async CalculateRemaining(p_doc_no: string) {
     // console.log(sale_header_id)
     console.log("Start CalculateRemaining")
     console.log("doc_no :" + p_doc_no)
@@ -426,21 +566,31 @@ export class ExportRawComponent implements OnInit {
     }
 
     // console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/stock/calculateStockRemaining", JSON.stringify(json))
-      .subscribe(
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/calculateStockRemaining", JSON.stringify(json))
+      .toPromise().then(
         response => {
           if (response) {
-
-            Swal.fire('เพิ่มข้อมูลนำออกวัตถุดิบเรียบร้อย', '', 'success');
+            // console.log("Step4")
+            // Swal.fire('เพิ่มข้อมูลนำเข้าวัตถุดิบเรียบร้อยแล้ว', '', 'success');
             // this.getProducts();
           } else {
-            // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+            console.log(JSON.stringify(response))
+            Swal.fire({
+              text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+              icon: 'error',
+              confirmButtonColor: '#3085d6',
+              confirmButtonText: 'OK'
+            })
           }
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้', 'error');
+          console.log(JSON.stringify(error))
+          Swal.fire({
+            text: "ไม่สามารถเพิ่มข้อมูลนำออกวัตถุดิบได้",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
     console.log("End CalculateRemaining")
   }
@@ -481,18 +631,6 @@ export class ExportRawComponent implements OnInit {
 
   }
 
-  deleteModal(template: TemplateRef<any>, product) {
-    this.Product_ID = product.id;
-    this.modalRef = this.modalService.show(template, {
-      class: 'modal-sm modal-dialog-centered',
-    });
-  }
-
-
-  decline() {
-    this.modalRef.hide();
-  }
-
   addItems() {
     this.newItemStock.raw_material_id = this.item_raw_id;
     this.newItemStock.raw_material_name = this.item_raw_name;
@@ -531,26 +669,15 @@ export class ExportRawComponent implements OnInit {
       }
     }
   }
-  btnColor() {
-    document.getElementById('btn-yes').style.backgroundColor = '#00d0f1';
-    document.getElementById('btn-yes').style.border = '1px solid #00d0f1';
-    document.getElementById('btn-yes').style.color = '#fff';
 
-    document.getElementById('btn-no').style.backgroundColor = '#fff';
-    document.getElementById('btn-no').style.border = '1px solid #fff';
-    document.getElementById('btn-no').style.color = '#000';
+  numberOnly(event): boolean {
+    const charCode = (event.which) ? event.which : event.keyCode;
+    if (charCode == 46 || (charCode >= 48 && charCode <= 57)) {
+      return true;
+    }
+    return false;
+
   }
-
-  btnColorNo() {
-    document.getElementById('btn-no').style.backgroundColor = '#00d0f1';
-    document.getElementById('btn-no').style.border = '1px solid #00d0f1';
-    document.getElementById('btn-no').style.color = '#fff';
-
-    document.getElementById('btn-yes').style.backgroundColor = '#fff';
-    document.getElementById('btn-yes').style.border = '1px solid #fff';
-    document.getElementById('btn-yes').style.color = '#000';
-  }
-
 
 
 }

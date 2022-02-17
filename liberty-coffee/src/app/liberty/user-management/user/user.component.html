@@ -38,7 +38,7 @@
                   style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
                   <i class="fa fa-pen"></i></button>
                 &nbsp;
-                <button type="button" class="btn btn-icon" (click)="deleteModal(TemplateDelete,user);"
+                <button type="button" class="btn btn-icon" (click)="DeleteAction(user);"
                   style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
                   <i class="fa fa-trash"></i></button>
               </td>
@@ -58,56 +58,109 @@
     </button>
   </div>
   <div class="modal-body">
-    <form>
+    <form #validationForm="ngForm" class="editForm" novalidate>
       <div class="row">
         <div class="col-12">
           <div class="form-group">
             <label for="inputAddress">ชื่อ</label>
-            <input type="text" class="form-control" id="inputAddress" placeholder="ชื่อ" [(ngModel)]="name"
-              [ngModelOptions]="{standalone: true}">
+            <input type="text" autocomplete="off" class="form-control" name="validation-firstname"
+              [ngClass]="{'is-invalid': !firstname.valid && (firstname.dirty || firstname.touched || isSubmit)}"
+              #firstname="ngModel" required [(ngModel)]="formInput.firstname">
+            <label *ngIf="!firstname.valid && (firstname.dirty || firstname.touched || isSubmit)"
+              id="validation-firstname-error"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกชื่อ</label>
+            <!-- <input type="text" class="form-control" id="inputAddress" placeholder="ชื่อ" [(ngModel)]="name"
+              [ngModelOptions]="{standalone: true}"> -->
           </div>
           <div class="form-group">
             <label for="inputAddress">นามสกุล</label>
-            <input type="text" class="form-control" id="inputAddress" placeholder="นามสกุล" [(ngModel)]="lastname"
-              [ngModelOptions]="{standalone: true}">
+            <input type="text" autocomplete="off" class="form-control" name="validation-lastname"
+              [ngClass]="{'is-invalid': !lastname.valid && (lastname.dirty || lastname.touched || isSubmit)}"
+              #lastname="ngModel" required [(ngModel)]="formInput.lastname">
+            <label *ngIf="!lastname.valid && (lastname.dirty || lastname.touched || isSubmit)"
+              id="validation-lastname-error"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกนามสกุล</label>
+            <!-- <input type="text" class="form-control" id="inputAddress" placeholder="นามสกุล" [(ngModel)]="lastname"
+              [ngModelOptions]="{standalone: true}"> -->
           </div>
           <div class="form-row">
             <div class="form-group col-md-6">
               <label for="inputEmail4">Username</label>
-              <input type="text" class="form-control" id="inputEmail4" placeholder="Username" [(ngModel)]="username"
-                [ngModelOptions]="{standalone: true}">
+              <input type="text" autocomplete="off" class="form-control" name="validation-username"
+                [ngClass]="{'is-invalid': !username.valid && (username.dirty || username.touched || isSubmit)}"
+                #username="ngModel" required [(ngModel)]="formInput.username">
+              <label *ngIf="!username.valid && (username.dirty || username.touched || isSubmit)"
+                id="validation-username-error"
+                class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอก ๊sername</label>
+              <!-- <input type="text" class="form-control" id="inputEmail4" placeholder="Username" [(ngModel)]="username"
+                [ngModelOptions]="{standalone: true}"> -->
             </div>
             <div class="form-group col-md-6">
               <label for="inputPassword4">Password</label>
-              <input type="password" class="form-control" id="inputPassword4" placeholder="Password"
-                [(ngModel)]="password" [ngModelOptions]="{standalone: true}">
+              <input type="password" autocomplete="off" class="form-control" name="validation-password"
+                [ngClass]="{'is-invalid': !password.valid && (password.dirty || password.touched || isSubmit)}"
+                #password="ngModel" required [(ngModel)]="formInput.password">
+              <label *ngIf="!password.valid && (password.dirty || password.touched || isSubmit)"
+                id="validation-password-error"
+                class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอก Password</label>
+              <!-- <input type="password" class="form-control" id="inputPassword4" placeholder="Password"
+                [(ngModel)]="password" [ngModelOptions]="{standalone: true}"> -->
             </div>
           </div>
           <div class="form-row">
             <div class="form-group col-md-4">
               <label for="inputState">สิทธิ์</label>
-              <select id="inputState" class="form-control" [(ngModel)]="roleId" [ngModelOptions]="{standalone: true}">
+              <select class="form-control" name="validation-roleId"
+                [ngClass]="{'is-invalid': !roleId.valid && (roleId.dirty || roleId.touched || isSubmit)}"
+                #roleId="ngModel" required [(ngModel)]="formInput.roleId">
                 <option selected></option>
                 <option *ngFor="let result of ddlRole" [value]="result.role_id">
                   {{result.role_name}}</option>
               </select>
+              <label *ngIf="!roleId.valid && (roleId.dirty || roleId.touched || isSubmit)" id="validation-roleId-error"
+                class="error jquery-validation-error small form-text invalid-feedback">กรุณาเลือกสิทธิ์</label>
+              <!-- <select id="inputState" class="form-control" [(ngModel)]="roleId" [ngModelOptions]="{standalone: true}">
+                <option selected></option>
+                <option *ngFor="let result of ddlRole" [value]="result.role_id">
+                  {{result.role_name}}</option>
+              </select> -->
             </div>
             <div class="form-group col-md-5">
               <label for="inputState">สาขา</label>
-              <select id="inputState" class="form-control" [(ngModel)]="branchId" [ngModelOptions]="{standalone: true}">
+              <select class="form-control" name="validation-branchId"
+                [ngClass]="{'is-invalid': !branchId.valid && (branchId.dirty || branchId.touched || isSubmit)}"
+                #branchId="ngModel" required [(ngModel)]="formInput.branchId">
                 <option selected></option>
                 <option *ngFor="let result of ddlBranch" [value]="result.branch_id">
                   {{result.branch_name}}</option>
               </select>
+              <label *ngIf="!branchId.valid && (branchId.dirty || branchId.touched || isSubmit)"
+                id="validation-branchId-error"
+                class="error jquery-validation-error small form-text invalid-feedback">กรุณาเลือกสาขา</label>
+              <!-- <select id="inputState" class="form-control" [(ngModel)]="branchId" [ngModelOptions]="{standalone: true}">
+                <option selected></option>
+                <option *ngFor="let result of ddlBranch" [value]="result.branch_id">
+                  {{result.branch_name}}</option>
+              </select> -->
             </div>
             <div class="form-group col-md-3">
               <label for="inputState">Active</label>
-              <select id="inputState" class="form-control" [(ngModel)]="activeFlag"
-                [ngModelOptions]="{standalone: true}">
+              <select class="form-control" name="validation-activeFlag"
+                [ngClass]="{'is-invalid': !activeFlag.valid && (activeFlag.dirty || activeFlag.touched || isSubmit)}"
+                #activeFlag="ngModel" required [(ngModel)]="formInput.activeFlag">
                 <option selected></option>
                 <option value="1">Active</option>
                 <option value="0">InActive</option>
               </select>
+              <label *ngIf="!activeFlag.valid && (activeFlag.dirty || activeFlag.touched || isSubmit)"
+                id="validation-activeFlag-error"
+                class="error jquery-validation-error small form-text invalid-feedback">กรุณาเลือกสถานะการใช้งาน</label>
+              <!-- <select id="inputState" class="form-control" [(ngModel)]="activeFlag"
+                [ngModelOptions]="{standalone: true}">
+                <option selected></option>
+                <option value="1">Active</option>
+                <option value="0">InActive</option>
+              </select> -->
             </div>
           </div>
         </div>
@@ -115,7 +168,8 @@
       <div class="text-right">
         <button type="button" class="btn btn-secondary" data-dismiss="modal"
           (click)="modalRef.hide()">Close</button>&nbsp;
-        <button type="button" class="btn btn-primary" (click)="SaveUser();modalRef.hide()">Save changes</button>
+        <button type="button" class="btn btn-primary" (click)="SaveUser(validationForm)">Save
+          changes</button>
       </div>
     </form>
   </div>

@@ -146,11 +146,10 @@ const NavigationItemsAdmin = [
       }
       // ,
       // {
-      //   id: 'permission',
-      //   title: 'สิทธิ์การเข้าใช้งาน',
+      //   id: 'form-validation',
+      //   title: 'Form Validation',
       //   type: 'item',
-      //   icon: 'fa fa-user-lock',
-      //   url: '/permission',
+      //   url: '/forms/validation',
       //   classes: 'nav-item'
       // }
     ]

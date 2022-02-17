@@ -5,10 +5,17 @@ import { ApiService } from '../../services/api.service';
 import 'sweetalert2/src/sweetalert2.scss';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { environment } from 'src/environments/environment';
 
 
-class DataTablesResponse {
-  data: any[];
+export class FormInput {
+  firstname: any
+  lastname: any
+  username: any
+  password: any
+  roleId: any
+  branchId: any
+  activeFlag: any
 }
 
 
@@ -18,18 +25,20 @@ class DataTablesResponse {
   styleUrls: ['./user.component.scss']
 })
 export class UserComponent implements OnInit {
+  strFullName: string;
+  strUserID: string;
   dtRouterLinkOptions: any = {};
   allbranch;
   userlist: [];
   userDetail: [];
   testString;
-  name;
-  lastname;
-  username;
-  password;
-  roleId;
-  branchId;
-  activeFlag;
+  // name;
+  // lastname;
+  // username;
+  // password;
+  // roleId;
+  // branchId;
+  // activeFlag;
   id;
   idupdate;
 
@@ -38,24 +47,43 @@ export class UserComponent implements OnInit {
 
   modalRef: BsModalRef;
 
+  formInput: FormInput;
+  form: any;
+  public isSubmit: boolean;
+
+
+
   constructor(private http: HttpClient,
     private apiService: ApiService,
     private modalService: BsModalService) { }
 
   ngOnInit() {
-    this.getUser();
+    var userid = localStorage.getItem('userid');
+    var fullname = localStorage.getItem('fullname')
+    this.strFullName = fullname
+    this.strUserID = userid
+
+    this.pageLoad();
 
   }
 
+  pageLoad() {
+    this.getddlRole();
+    this.getddlBranch();
+    this.getUser();
+
+    this.isSubmit = false
+  }
+
   getUser() {
-    this.apiService.restApiGet("http://localhost:8080/user/getUser")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/user/getUser")
       .subscribe(
         data => {
           this.userlist = data['data'];
-          console.log(this.userlist)
-          $(function () {
-            $('data').DataTable();
-          });
+          // console.log(this.userlist)
+          // $(function () {
+          //   $('data').DataTable();
+          // });
           // console.log(this.ddlRole)
         },
         error => {
@@ -65,85 +93,112 @@ export class UserComponent implements OnInit {
 
   onNewUser() {
     this.id = "";
-    this.name = "";
-    this.lastname = "";
-    this.username = "";
-    this.password = "";
-    this.getddlRole();
-    this.getddlBranch();
-    this.activeFlag = "";
+    this.formInput = {
+      firstname: '',
+      lastname: '',
+      username: '',
+      password: '',
+      roleId: '',
+      branchId: '',
+      activeFlag: '',
+    }
+
+    this.isSubmit = false
 
   }
 
-  SaveUser() {
+  async SaveUser(form: any) {
     // console.log(this.id)
-    this.idupdate = this.id
-    if (this.id === "") {
-      console.log("Save User")
-      let json = {
-        firstname: this.name,
-        lastname: this.lastname,
-        username: this.username,
-        password: this.password,
-        role_id: parseInt(this.roleId),
-        branch_id: parseInt(this.branchId),
-        active_flag: parseInt(this.activeFlag),
-        user_action: "system",
-      }
-      // console.log(JSON.stringify(json))
-      this.apiService.restApiSendParm("http://localhost:8080/user/users", JSON.stringify(json))
-        .subscribe(
-          response => {
-            if (response) {
-              Swal.fire('เพิ่มผู้ใช้งานเรียบร้อยแล้ว', '', 'success');
-              this.getUser();
-            } else {
-              // console.log("Login Fail")
-              Swal.fire('', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
-            }
-          },
-          error => {
-            // console.log(error)
-            Swal.fire('', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
-          });
+    if (!form.valid) {
+      this.isSubmit = true;
+      return;
     } else {
-      console.log("Update User")
-      // console.log(this.idupdate)
-      let json = {
-        id: parseInt(this.idupdate),
-        firstname: this.name,
-        lastname: this.lastname,
-        username: this.username,
-        password: this.password,
-        role_id: parseInt(this.roleId),
-        branch_id: parseInt(this.branchId),
-        active_flag: parseInt(this.activeFlag),
-        user_action: "system",
+      this.idupdate = this.id
+      if (this.id === "") {
+        console.log("Save User")
+        let json = {
+          firstname: this.formInput.firstname,
+          lastname: this.formInput.lastname,
+          username: this.formInput.username,
+          password: this.formInput.password,
+          role_id: parseInt(this.formInput.roleId),
+          branch_id: parseInt(this.formInput.branchId),
+          active_flag: parseInt(this.formInput.activeFlag),
+          user_action: this.strFullName
+        }
+        // console.log(JSON.stringify(json))
+        await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/user/users", JSON.stringify(json))
+          .toPromise().then(
+            data => {
+              Swal.fire({
+                text: "เพิ่มผู้ใช้งานเรียบร้อยแล้ว",
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              }).then((result) => {
+                if (result.value) {
+                  // console.log("ngOnInit Again")
+                  this.ngOnInit();
+                }
+              });
+            },
+            error => {
+              console.log(JSON.stringify(error))
+              Swal.fire({
+                text: "ไม่สามารถเพิ่มผู้ใช้งานได้",
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              })
+            });
+      } else {
+        console.log("Update User")
+        // console.log(this.idupdate)
+        let json = {
+          id: parseInt(this.idupdate),
+          firstname: this.formInput.firstname,
+          lastname: this.formInput.lastname,
+          username: this.formInput.username,
+          password: this.formInput.password,
+          role_id: parseInt(this.formInput.roleId),
+          branch_id: parseInt(this.formInput.branchId),
+          active_flag: parseInt(this.formInput.activeFlag),
+          user_action: this.strFullName
+        }
+        // console.log(JSON.stringify(json))
+        await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/user/updateUser", JSON.stringify(json))
+          .toPromise().then(
+            data => {
+              Swal.fire({
+                text: "แก้ไขผู้ใช้งานเรียบร้อยแล้ว",
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              }).then((result) => {
+                if (result.value) {
+                  // console.log("ngOnInit Again")
+                  this.ngOnInit();
+                }
+              });
+            },
+            error => {
+              console.log(JSON.stringify(error))
+              Swal.fire({
+                text: "ไม่สามารถแก้ไขผู้ใช้งานได้",
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              })
+            });
       }
-      console.log(JSON.stringify(json))
-      this.apiService.restApiSendParm("http://localhost:8080/user/updateUser", JSON.stringify(json))
-        .subscribe(
-          response => {
-            if (response) {
-              Swal.fire('แก้ไขผู้ใช้งานเรียบร้อยแล้ว', '', 'success');
-              this.getUser();
-            } else {
-              // console.log("Login Fail")
-              Swal.fire('', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
-            }
-          },
-          error => {
-            // console.log(error)
-            Swal.fire('', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
-          });
+      this.modalRef.hide()
     }
-
   }
 
 
   getddlRole() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/share/getRole")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/share/getRole")
       .subscribe(
         data => {
           // console.log(data)
@@ -157,7 +212,7 @@ export class UserComponent implements OnInit {
 
   getddlBranch() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/share/getBranch")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/share/getBranch")
       .subscribe(
         data => {
           // console.log(data)
@@ -176,18 +231,21 @@ export class UserComponent implements OnInit {
     let json = { id: parseInt(this.id) }
     console.log(JSON.stringify(json))
 
-    this.apiService.restApiSendParm("http://localhost:8080/user/getUserDetail", JSON.stringify(json))
+    this.apiService.restApiSendParm(environment.apiLibertyUrl + "/user/getUserDetail", JSON.stringify(json))
       .subscribe(
         data => {
           this.userDetail = data['data'];
+          console.log(this.userDetail)
+          this.formInput = {
+            firstname: data['data'][0].firstname,
+            lastname: data['data'][0].lastname,
+            username: data['data'][0].username,
+            password: data['data'][0].password,
+            roleId: data['data'][0].role_id,
+            branchId: data['data'][0].branch_id,
+            activeFlag: data['data'][0].active_flag
+          }
           // console.log(data['data'][0].firstname)
-          this.name = data['data'][0].firstname
-          this.lastname = data['data'][0].lastname
-          this.username = data['data'][0].username
-          this.password = data['data'][0].password
-          this.roleId = data['data'][0].role_id
-          this.branchId = data['data'][0].branch_id
-          this.activeFlag = data['data'][0].active_flag
           // $(function () {
           //   $('data').DataTable();
           // });
@@ -201,30 +259,56 @@ export class UserComponent implements OnInit {
 
   }
 
-  deleteUser() {
+  DeleteAction(user) {
+    this.id = user.id;
+    Swal.fire({
+      // title: 'Are you sure?',
+      text: "ต้องการลบผู้ใช้งานหรือไม่?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes'
+    }).then(async (result) => {
+      if (result.value) {
+        // console.log("Go to DeleteUOM")
+        await this.deleteUser()
+        // console.log("Run Step2")
+        Swal.fire(
+          'Deleted!',
+          'ลบข้อมูลสินค้าเรียบร้อยแล้ว',
+          'success'
+        ).then((result1) => {
+          if (result1.value) {
+            // console.log("Go to ngOninit")
+            this.ngOnInit()
+          }
+        })
+      }
+    })
+  }
+
+  async deleteUser() {
     console.log("Delete User")
     let json = { id: parseInt(this.id) }
     // console.log(JSON.stringify(json))
-    this.apiService.restApiSendParm("http://localhost:8080/user/deleteUser", JSON.stringify(json))
-      .subscribe(
-        response => {
-          if (response) {
-            Swal.fire('ลบผู้ใช้งานเรียบร้อยแล้ว', '', 'success');
-            this.getUser();
-          } else {
-            // console.log("Login Fail")
-            Swal.fire('', 'ไม่สามารถลบผู้ใช้งานได้', 'error');
-          }
+    await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/user/deleteUser", JSON.stringify(json))
+      .toPromise().then(
+        data => {
+          // console.log("Run Step1")
+          // console.log("Delete UOMT Success")
         },
         error => {
-          // console.log(error)
-          Swal.fire('', 'ไม่สามารถลบผู้ใช้งานได้', 'error');
+          console.log(JSON.stringify(json))
+          console.log(JSON.stringify(error))
+          Swal.fire({
+            text: "ไม่สามารถลบผู้ใช้งานได้",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
         });
 
-    this.modalRef.hide();
-  }
-
-  decline() {
     this.modalRef.hide();
   }
 
@@ -239,35 +323,5 @@ export class UserComponent implements OnInit {
     this.viewUser()
   }
 
-  deleteModal(template: TemplateRef<any>, user) {
-    this.id = user.id;
-    console.log(this.id)
-    this.modalRef = this.modalService.show(template, {
-      class: 'modal-sm modal-dialog-centered',
-    });
-
-  }
-
-  //======= End Modal =======
-
-  btnColor() {
-    document.getElementById('btn-yes').style.backgroundColor = '#00d0f1';
-    document.getElementById('btn-yes').style.border = '1px solid #00d0f1';
-    document.getElementById('btn-yes').style.color = '#fff';
-
-    document.getElementById('btn-no').style.backgroundColor = '#fff';
-    document.getElementById('btn-no').style.border = '1px solid #fff';
-    document.getElementById('btn-no').style.color = '#000';
-  }
-
-  btnColorNo() {
-    document.getElementById('btn-no').style.backgroundColor = '#00d0f1';
-    document.getElementById('btn-no').style.border = '1px solid #00d0f1';
-    document.getElementById('btn-no').style.color = '#fff';
-
-    document.getElementById('btn-yes').style.backgroundColor = '#fff';
-    document.getElementById('btn-yes').style.border = '1px solid #fff';
-    document.getElementById('btn-yes').style.color = '#000';
-  }
 
 }

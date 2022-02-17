@@ -34,7 +34,7 @@
                   style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
                   <i class="fa fa-pen"></i></button>
                 &nbsp;
-                <button type="button" class="btn btn-icon" (click)="deleteModal(TemplateDelete,product);"
+                <button type="button" class="btn btn-icon" (click)="DeleteAction(product);"
                   style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
                   <i class="fa fa-trash"></i></button>
                 <!-- &nbsp;
@@ -58,20 +58,27 @@
     </button>
   </div>
   <div class="modal-body">
-    <form>
+    <form #validationForm="ngForm" class="editForm" novalidate>
       <div class="row">
         <div class="col-6">
           <div class="form-group">
             <label for="inputAddress">รหัส/บาร์โค้ด</label>
-            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Barcode"
+            <input type="text" autocomplete="off" class="form-control" id="inputAddress" [(ngModel)]="Barcode"
               [ngModelOptions]="{standalone: true}">
           </div>
         </div>
         <div class="col-6">
           <div class="form-group">
             <label for="inputAddress">ชื่อสินค้า</label>
-            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Product_Name"
-              [ngModelOptions]="{standalone: true}">
+            <input type="text" autocomplete="off" class="form-control" name="validation-Product_Name"
+              [ngClass]="{'is-invalid': !Product_Name.valid && (Product_Name.dirty || Product_Name.touched || isSubmit)}"
+              #Product_Name="ngModel" required [(ngModel)]="formInput.Product_Name">
+            <label *ngIf="!Product_Name.valid && (Product_Name.dirty || Product_Name.touched || isSubmit)"
+              id="validation-Product_Name-error"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกข้อมูลสินค้า</label>
+
+            <!-- <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Product_Name"
+              [ngModelOptions]="{standalone: true}"> -->
           </div>
         </div>
       </div>
@@ -79,22 +86,43 @@
         <div class="col-6">
           <div class="form-group">
             <label for="inputAddress">ประเภทสินค้า</label>
-            <select id="inputState1" class="form-control" [(ngModel)]="ProductType"
-              [ngModelOptions]="{standalone: true}">
+            <select class="form-control" name="validation-ProductType"
+              [ngClass]="{'is-invalid': !ProductType.valid && (ProductType.dirty || ProductType.touched || isSubmit)}"
+              #ProductType="ngModel" required [(ngModel)]="formInput.ProductType">
               <option selected></option>
               <option value="1">Finish Good</option>
               <option value="2">Bundle Product</option>
             </select>
+            <label *ngIf="!ProductType.valid && (ProductType.dirty || ProductType.touched || isSubmit)"
+              id="validation-ProductType-error"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณาเลือกประเภทสินค้า</label>
+
+            <!-- <select id="inputState1" class="form-control" [(ngModel)]="ProductType"
+              [ngModelOptions]="{standalone: true}">
+              <option selected></option>
+              <option value="1">Finish Good</option>
+              <option value="2">Bundle Product</option>
+            </select> -->
           </div>
         </div>
         <div class="col-6">
           <div class="form-group">
             <label for="inputAddress">หน่วยนับ</label>
-            <select id="inputState1" class="form-control" [(ngModel)]="UOM_ID" [ngModelOptions]="{standalone: true}">
+            <select class="form-control" name="validation-UOM_ID"
+              [ngClass]="{'is-invalid': !UOM_ID.valid && (UOM_ID.dirty || UOM_ID.touched || isSubmit)}"
+              #UOM_ID="ngModel" required [(ngModel)]="formInput.UOM_ID">
               <option selected></option>
               <option *ngFor="let result1 of ddlUOMs" [value]="result1.uom_id">
                 {{result1.uom_name}}</option>
             </select>
+            <label *ngIf="!UOM_ID.valid && (UOM_ID.dirty || UOM_ID.touched || isSubmit)" id="validation-UOM_ID-error"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณาเลือกหน่วยนับ</label>
+
+            <!-- <select id="inputState1" class="form-control" [(ngModel)]="UOM_ID" [ngModelOptions]="{standalone: true}">
+              <option selected></option>
+              <option *ngFor="let result1 of ddlUOMs" [value]="result1.uom_id">
+                {{result1.uom_name}}</option>
+            </select> -->
           </div>
         </div>
       </div>
@@ -103,7 +131,7 @@
           <label for="inputAddress">{{ProductType}}</label>
         </div>
       </div> -->
-      <div *ngIf="ProductType==2">
+      <div *ngIf="formInput.ProductType==2">
         <hr width="100%">
         <div class="row">
           <div class="col-6">
@@ -127,8 +155,8 @@
           </div>
           <div class="col-4">
             <div class="form-group">
-              <input type="text" class="form-control" id="inputAddress" [(ngModel)]="newItem.quantity"
-                name="newItemQuantity">
+              <input type="text" autocomplete="off" (keypress)="numberOnly($event)" class="form-control"
+                id="inputAddress" [(ngModel)]="newItem.quantity" name="newItemQuantity">
             </div>
           </div>
           <div class="col-2">
@@ -181,225 +209,8 @@
       <div class="text-right">
         <button type="button" class="btn btn-secondary" data-dismiss="modal"
           (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
-        <button type="button" class="btn btn-primary" (click)="SaveProduct();modalRef.hide()">บันทึก</button>
+        <button type="button" class="btn btn-primary" (click)="SaveProduct(validationForm)">บันทึก</button>
       </div>
     </form>
-  </div>
-</ng-template>
-
-<ng-template #TemplateEdit>
-  <div class="modal-header">
-    <h4 class="modal-title pull-left">แก้ไขข้อมูลหน่วยนับ</h4>
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <form>
-      <div class="row">
-        <div class="col-12">
-          <div class="form-group">
-            <label for="inputAddress">หน่วยนับ</label>
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-8">
-          <div class="form-group">
-            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Product_Name"
-              [ngModelOptions]="{standalone: true}">
-          </div>
-        </div>
-        <div class="col-4">
-          <div class="form-group">
-            <div *ngIf="Product_Active_ID==1;else tpl1">
-              <button type="button" class="btn btn-success" data-toggle="modal"
-                (click)="modalRef.hide();addBundleModal(TemplateTransfer);">แปลงหน่วยนับ</button>
-            </div>
-            <ng-template #tpl1>
-              <button type="button" class="btn btn-dark" disabled>แปลงหน่วยนับ</button>
-            </ng-template>
-
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-12">
-          <div class="form-group">
-            <div class="switch switch-primary d-inline m-r-10">
-              <input type="checkbox" id="switch-p-1" [checked]="Product_Active" name="chkActive"
-                (change)="Product_Active = !Product_Active">
-              <label for="switch-p-1" class="cr"></label>
-            </div>
-            <label>เปิดใช้งาน</label>
-          </div>
-        </div>
-      </div>
-      <div class="text-right">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal"
-          (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
-        <button type="button" class="btn btn-primary" (click)="UpdateProduct();modalRef.hide()">บันทึก</button>
-      </div>
-    </form>
-  </div>
-</ng-template>
-
-<ng-template #TemplateTransfer>
-  <div class="modal-header">
-    <h4 class="modal-title pull-left">แปลงหน่วยนับ</h4>
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <form>
-      <div class="row">
-        <div class="col-6">
-          <div class="form-group">
-            <label for="inputAddress">หน่วยนับ 1</label>
-            <select id="inputState" class="form-control" [(ngModel)]="ProductID_1"
-              [ngModelOptions]="{standalone: true}">
-              <option selected></option>
-              <option *ngFor="let result of ddlProducts" [value]="result.product_id"
-                [selected]="ProductID_1 == result.product_id ? 'selected' :'' ">
-                {{result.product_name}}</option>
-            </select>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="form-group">
-            <label for="inputAddress">จำนวน</label>
-            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Quantity_1"
-              [ngModelOptions]="{standalone: true}">
-          </div>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-6">
-          <div class="form-group">
-            <label for="inputAddress">หน่วยนับ 2</label>
-            <select id="inputState1" class="form-control" [(ngModel)]="ProductID_2"
-              [ngModelOptions]="{standalone: true}">
-              <option selected></option>
-              <option *ngFor="let result1 of ddlProducts" [value]="result1.product_id">
-                {{result1.product_name}}</option>
-            </select>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="form-group">
-            <label for="inputAddress">จำนวน</label>
-            <input type="text" class="form-control" id="inputAddress" [(ngModel)]="Quantity_2"
-              [ngModelOptions]="{standalone: true}">
-          </div>
-        </div>
-      </div>
-      <div class="text-right">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal"
-          (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
-        <button type="button" class="btn btn-primary" (click)="SaveBundle();modalRef.hide()">บันทึก</button>
-      </div>
-    </form>
-  </div>
-</ng-template>
-
-<ng-template #TemplateViewBundle>
-  <div class="modal-header">
-    <h4 class="modal-title pull-left">เทียบปริมาตรต่อ 1 {{Product_Name}}</h4>
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <form>
-      <div class="row">
-        <div class="col-12">
-          <div class="form-group">
-            <button type="button" class="btn btn-success" data-toggle="modal"
-              (click)="modalRef.hide();addBundleModal(TemplateTransfer);">เพิ่มข้อมูล</button>
-          </div>
-        </div>
-        <div class="col-12">
-          <div class="form-group">
-            <div class="table-responsive">
-              <table *ngIf="productts" datatable="ng" datatable [dtOptionsBundle]="dtOptionsBundle"
-                [dtTrigger]="dtTrigger" class="table table-striped table-bordered table-hover" style="width: 99%;">
-                <thead>
-                  <tr>
-                    <th style="width: 40%;">
-                      หน่วยนับ
-                    </th>
-                    <th style="width: 40%;">
-                      จำนวน</th>
-                    <th style="width: 20%;">
-                    </th>
-                  </tr>
-                </thead>
-                <tbody *ngIf="productts?.length != 0">
-                  <tr *ngFor="let productt of productts">
-                    <td class="text-center">
-                      {{
-                      productt.name2
-                      }}</td>
-                    <td class="text-center">
-                      {{
-                      productt.quantity2
-                      }}</td>
-                    <td class="text-center">
-                      <button type="button" class="btn btn-icon"
-                        (click)="modalRef.hide();editBundleModal(TemplateTransfer,productt);"
-                        style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
-                        <i class="fa fa-pen"></i></button>
-                      &nbsp;
-                      <button type="button" class="btn btn-icon"
-                        (click)="modalRef.hide();deleteModal1(TemplateDelete1,productt);"
-                        style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
-                        <i class="fa fa-trash"></i></button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </form>
-  </div>
-</ng-template>
-
-<ng-template #TemplateDelete>
-  <div class="modal-header">
-    <h4 class="modal-title pull-left">Delete</h4>
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body text-center">
-    ต้องการลบข้อมูลสินค้าหรือไม่?
-    <div style="margin-top:25px">
-      <button type="button" class="btn btn-default" (click)="DeleteProduct()" (mouseover)="btnColor()"
-        id="btn-yes">Yes</button>
-      <button type="button" class="btn btn-primary" (click)="decline()" (mouseover)="btnColorNo()"
-        id="btn-no">No</button>
-    </div>
-  </div>
-</ng-template>
-
-<ng-template #TemplateDelete1>
-  <div class="modal-header">
-    <h4 class="modal-title pull-left">Delete</h4>
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body text-center">
-    ต้องการลบข้อมูลแปลงหน่วยนับหรือไม่?
-    <div style="margin-top:25px">
-      <button type="button" class="btn btn-default" (click)="DeleteBundle()" (mouseover)="btnColor()"
-        id="btn-yes">Yes</button>
-      <button type="button" class="btn btn-primary" (click)="decline()" (mouseover)="btnColorNo()"
-        id="btn-no">No</button>
-    </div>
   </div>
 </ng-template>
