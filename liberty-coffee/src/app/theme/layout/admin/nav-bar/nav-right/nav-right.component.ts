@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
 import { ApiService } from '../../../../../liberty/services/api.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-nav-right',
@@ -40,7 +41,7 @@ export class NavRightComponent implements OnInit {
 
   getddlBranch() {
     //confirm, unconfirm
-    this.apiService.restApiGet("http://localhost:8080/share/getBranch")
+    this.apiService.restApiGet(environment.apiLibertyUrl + "/share/getBranch")
       .subscribe(
         data => {
           // console.log(data)

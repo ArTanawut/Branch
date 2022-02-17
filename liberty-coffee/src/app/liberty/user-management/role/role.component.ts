@@ -19,7 +19,7 @@ export class FormInput {
 export class RoleComponent implements OnInit {
   strFullName: string;
   strUserID: string;
-  dtOptions: DataTables.Settings = {};
+  dtOptions: any;
   private RoleSubscription: any;
   roles = [];
   modalRef: BsModalRef;

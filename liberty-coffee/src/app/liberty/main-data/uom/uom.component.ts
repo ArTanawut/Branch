@@ -33,8 +33,8 @@ export class UomComponent implements OnDestroy, OnInit {
   strUserID: string;
   private myEventSubscription: any;
   private myEventSubscription1: any;
-  dtOptions: DataTables.Settings = {};
-  dtOptionsUOMT: DataTables.Settings = {};
+  dtOptions: any;
+  dtOptionsUOMT: any;
   dtTrigger: Subject<any> = new Subject<any>();
 
   uoms = [];
@@ -420,6 +420,8 @@ export class UomComponent implements OnDestroy, OnInit {
   }
 
   editModal(template: TemplateRef<any>, uom) {
+    console.log('editModal');
+
     this.isSubmit = false
     this.UOM_ID = uom.id;
     // console.log(uom.name)

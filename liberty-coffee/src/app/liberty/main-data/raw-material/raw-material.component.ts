@@ -23,7 +23,7 @@ export class RawMaterialComponent implements OnDestroy, OnInit {
   strFullName: string;
   strUserID: string;
   private RawSubscription: any;
-  dtOptions: DataTables.Settings = {};
+  dtOptions: any;
   dtTrigger: Subject<any> = new Subject<any>();
 
   raws = [];

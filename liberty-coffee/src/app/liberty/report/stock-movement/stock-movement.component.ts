@@ -7,6 +7,7 @@ import 'sweetalert2/src/sweetalert2.scss';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'rxjs/add/operator/map';
 import { NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class CustomDateParserFormatter extends NgbDateParserFormatter {
@@ -47,7 +48,7 @@ export class StockMovementComponent implements OnInit {
 
   dtOptions: any = {};
   dtOptionFulls: any = {};
-  dtOptionsBundle: DataTables.Settings = {};
+  dtOptionsBundle: any;
   stocks = [];
   stocksfull = [];
   uomts = [];
@@ -156,7 +157,7 @@ export class StockMovementComponent implements OnInit {
       ]
     };
 
-    this.myEventSubscription = this.apiService.restApiSendParm("http://localhost:8080/report/getReportStocks", JSON.stringify(json))
+    this.myEventSubscription = this.apiService.restApiSendParm(environment.apiLibertyUrl + "/report/getReportStocks", JSON.stringify(json))
       .subscribe(
         data => {
           //this.products = (data as any).data ;
@@ -190,7 +191,7 @@ export class StockMovementComponent implements OnInit {
       ]
     };
 
-    this.myEventSubscription1 = this.apiService.restApiSendParm("http://localhost:8080/report/getReportStocksFull", JSON.stringify(json))
+    this.myEventSubscription1 = this.apiService.restApiSendParm(environment.apiLibertyUrl + "/report/getReportStocksFull", JSON.stringify(json))
       .subscribe(
         data => {
           //this.products = (data as any).data ;
@@ -234,7 +235,7 @@ export class StockMovementComponent implements OnInit {
     }
     console.log(JSON.stringify(json))
 
-    this.apiService.restApiSendParm("http://localhost:8080/stock/getStockLine", JSON.stringify(json))
+    this.apiService.restApiSendParm(environment.apiLibertyUrl + "/stock/getStockLine", JSON.stringify(json))
       .subscribe(
         data => {
           this.items = data['data'];

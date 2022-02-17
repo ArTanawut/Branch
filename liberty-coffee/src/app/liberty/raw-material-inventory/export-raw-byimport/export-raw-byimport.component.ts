@@ -51,8 +51,8 @@ export class ExportRawByimportComponent implements OnInit {
   strFullName: string;
   strUserID: string;
   dtOptions: any = {};
-  // dtOptions: DataTables.Settings = {};
-  dtOptionsBundle: DataTables.Settings = {};
+  // dtOptions: any;
+  dtOptionsBundle: any;
   stocks = [];
   uomts = [];
   modalRef: BsModalRef;
@@ -646,6 +646,7 @@ export class ExportRawByimportComponent implements OnInit {
   viewLineModal(template: TemplateRef<any>, stock) {
     this.Stock_ID = stock.id
     this.linecount = stock.record
+    this.dtTrigger = new Subject<any>();
     this.getStockLines();
 
     this.modalRef = this.modalService.show(template, {

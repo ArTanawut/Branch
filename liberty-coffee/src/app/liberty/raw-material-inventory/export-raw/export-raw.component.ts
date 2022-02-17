@@ -47,8 +47,8 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
 export class ExportRawComponent implements OnInit {
   strFullName: string;
   strUserID: string;
-  dtOptions: DataTables.Settings = {};
-  dtOptionsBundle: DataTables.Settings = {};
+  dtOptions: any;
+  dtOptionsBundle: any;
   stocks = [];
   uomts = [];
   modalRef: BsModalRef;
@@ -623,6 +623,7 @@ export class ExportRawComponent implements OnInit {
   viewLineModal(template: TemplateRef<any>, stock) {
     this.Stock_ID = stock.id
     this.linecount = stock.record
+    this.dtTrigger = new Subject<any>();
     this.getStockLines();
 
     this.modalRef = this.modalService.show(template, {

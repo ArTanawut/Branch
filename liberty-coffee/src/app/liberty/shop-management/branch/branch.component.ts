@@ -23,7 +23,7 @@ export class FormInput {
 })
 export class BranchComponent implements OnDestroy, OnInit {
   RoleId: any;
-  dtOptions: DataTables.Settings = {};
+  dtOptions: any;
   branchs = [];
   Branch_ID: any;
   // Branch_Name: any;
@@ -35,7 +35,7 @@ export class BranchComponent implements OnDestroy, OnInit {
   Active_ID: any;
   public maskHour = [/\d/, /\d/, ':', /\d/, /\d/];
 
-  dtOptionsUOMT: DataTables.Settings = {};
+  dtOptionsUOMT: any;
   uoms = [];
   uomts = [];
   modalRef: BsModalRef;

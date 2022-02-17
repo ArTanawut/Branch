@@ -7,6 +7,7 @@ import 'sweetalert2/src/sweetalert2.scss';
 import Swal from 'sweetalert2/dist/sweetalert2.js';
 import 'rxjs/add/operator/map';
 import { NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
+import { environment } from 'src/environments/environment';
 
 @Injectable()
 export class CustomDateParserFormatter extends NgbDateParserFormatter {
@@ -45,7 +46,7 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
 export class NetProfitComponent implements OnInit {
 
   dtOptions: any = {};
-  dtOptionsBundle: DataTables.Settings = {};
+  dtOptionsBundle: any;
   stocks = [];
   uomts = [];
   modalRef: BsModalRef;
@@ -145,7 +146,7 @@ export class NetProfitComponent implements OnInit {
       ]
     };
 
-    this.myEventSubscription = this.apiService.restApiSendParm("http://localhost:8080/report/getReportSales", JSON.stringify(json))
+    this.myEventSubscription = this.apiService.restApiSendParm(environment.apiLibertyUrl + "/report/getReportSales", JSON.stringify(json))
       .subscribe(
         data => {
           //this.products = (data as any).data ;

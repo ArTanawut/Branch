@@ -31,8 +31,8 @@ export class ProductComponent implements OnDestroy, OnInit {
   private ProductSubscription: any;
   private BundleSubscription: any;
 
-  dtOptions: DataTables.Settings = {};
-  dtOptionsBundle: DataTables.Settings = {};
+  dtOptions: any;
+  dtOptionsBundle: any;
   dtTrigger: Subject<any> = new Subject<any>();
   dtTrigger2: Subject<any> = new Subject<any>();
 
