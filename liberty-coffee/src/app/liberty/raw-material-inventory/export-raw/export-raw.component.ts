@@ -597,7 +597,7 @@ export class ExportRawComponent implements OnInit {
 
   openModal(template: TemplateRef<any>) {
     this.modalRef = this.modalService.show(template, {
-      class: 'modal-lg modal-dialog-centered',
+      class: 'modal-xl modal-dialog-centered',
     });
   }
 
@@ -615,7 +615,7 @@ export class ExportRawComponent implements OnInit {
     this.getStockLines();
 
     this.modalRef = this.modalService.show(template, {
-      class: 'modal-lg modal-dialog-centered',
+      class: 'modal-xl modal-dialog-centered',
     });
 
   }
@@ -648,19 +648,22 @@ export class ExportRawComponent implements OnInit {
 
   onChange(raw) {
     // console.log(deviceValue)
+    // alert(raw)
     if (raw != "") {
       for (let i = 0; i < this.ddlRAWs.length; i++) {
         if (raw == this.ddlRAWs[i].raw_id) {
           this.item_raw_name = this.ddlRAWs[i].raw_name
           this.item_raw_id = this.ddlRAWs[i].raw_id
+          this.newItemStock.uom_id = this.ddlRAWs[i].uom_id2
+          this.onChangeUOM(this.ddlRAWs[i].uom_id2)
         }
       }
     }
-    // this.item_raw_name = deviceValue[0].raw_name;
   }
 
   onChangeUOM(uom) {
-    // console.log(deviceValue)
+    // console.log(uom)
+    // this.newItemStock.uom_id = uom
     if (uom != "") {
       for (let i = 0; i < this.ddlUOMs.length; i++) {
         if (uom == this.ddlUOMs[i].uom_id) {
@@ -677,6 +680,26 @@ export class ExportRawComponent implements OnInit {
       return true;
     }
     return false;
+
+  }
+
+  keyPress() {
+    // console.log(this.ddlRAWs)
+    // alert(this.newItemStock.barcode)
+
+    if (this.newItemStock.barcode != "") {
+      for (let i = 0; i < this.ddlRAWs.length; i++) {
+        if (this.newItemStock.barcode == this.ddlRAWs[i].barcode) {
+          this.newItemStock.raw_id = this.ddlRAWs[i].raw_id
+          this.onChange(this.ddlRAWs[i].raw_id)
+        }
+      }
+    } else {
+      this.newItemStock.raw_id = 0
+      this.newItemStock.uom_id = 0
+    }
+
+    // alert(this.barcode)
 
   }
 

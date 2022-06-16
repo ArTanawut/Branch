@@ -23,7 +23,7 @@
               <td>{{ stock.doc_no }}</td>
               <td>{{ stock.doc_date }}</td>
               <td>{{ stock.record }} รายการ</td>
-              <td>{{ stock.total_price-0 }}</td>
+              <td>{{ stock.total_price-0 | number : '1.2-2'}}</td>
               <td>{{ stock.filename }}</td>
               <!-- pen-square -->
               <td class="text-center">
@@ -78,9 +78,9 @@
                 <tr *ngFor="let item of items; let i = index">
                   <td style="padding: 3px;text-align: center;">{{item.barcode}}</td>
                   <td style="padding: 3px;text-align: center;">{{item.productname}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.quantity-0}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.price}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.total_price}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.quantity-0| number : '1.0-2'}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.price| number : '1.0-2'}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.total_price| number : '1.0-2'}}</td>
                   <td style="padding: 3px;text-align: center;">
                     <button type="button" class="btn btn-icon" (click)="removeItem(i)"
                       style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
@@ -133,9 +133,9 @@
                 <tr *ngFor="let item of items">
                   <td style="padding: 3px;text-align: center;">{{item.barcode}}</td>
                   <td style="padding: 3px;text-align: center;">{{item.product_name}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.quantity-0}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.price}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.total_price}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.quantity-0| number : '1.0-2'}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.price| number : '1.2-2'}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.total_price| number : '1.2-2'}}</td>
                 </tr>
               </tbody>
             </table>

@@ -39,10 +39,10 @@
                 <button type="button" class="btn btn-icon" (click)="DeleteAction(uom);"
                   style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
                   <i class="fa fa-trash"></i></button>
-                &nbsp;
+                <!-- &nbsp;
                 <button type="button" class="btn btn-icon" (click)="viewUOMTModal(TemplateViewUOMT,uom);"
                   style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
-                  <i class="fa fa-redo-alt"></i></button>
+                  <i class="fa fa-redo-alt"></i></button> -->
               </td>
             </tr>
           </tbody>
@@ -115,7 +115,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-8">
+        <div class="col-12">
           <div class="form-group">
             <input type="text" autocomplete="off" class="form-control" name="validation-required"
               [ngClass]="{'is-invalid': !UOM_Name.valid && (UOM_Name.dirty || UOM_Name.touched || isSubmit)}"
@@ -127,7 +127,7 @@
               [ngModelOptions]="{standalone: true}"> -->
           </div>
         </div>
-        <div class="col-4">
+        <!-- <div class="col-4">
           <div class="form-group">
             <div *ngIf="UOM_Active_ID==1;else tpl1">
               <button type="button" class="btn btn-success" data-toggle="modal"
@@ -138,7 +138,7 @@
             </ng-template>
 
           </div>
-        </div>
+        </div> -->
       </div>
       <div class="row">
         <div class="col-12">

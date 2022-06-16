@@ -8,6 +8,7 @@ import { RoleComponent } from './liberty/user-management/role/role.component';
 import { LoginComponent } from './demo/pages/authentication/login/login.component';
 import { DashboardComponent } from './liberty/dashboard/dashboard.component';
 import { UomComponent } from './liberty/main-data/uom/uom.component';
+import { GroupComponent } from './liberty/main-data/group/group.component';
 import { ProductComponent } from './liberty/main-data/product/product.component';
 import { RawMaterialComponent } from './liberty/main-data/raw-material/raw-material.component';
 import { ImportRawComponent } from './liberty/raw-material-inventory/import-raw/import-raw.component';
@@ -38,6 +39,7 @@ const routes: Routes = [
       { path: 'product', component: ProductComponent },
       { path: 'raw-material', component: RawMaterialComponent },
       { path: 'uom', component: UomComponent },
+      { path: 'group', component: GroupComponent },
       { path: 'import-raw', component: ImportRawComponent },
       { path: 'export-raw', component: ExportRawComponent },
       { path: 'export-raw-byimport', component: ExportRawByimportComponent },

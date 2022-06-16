@@ -1,0 +1,146 @@
+<div class="row">
+  <div class="col-sm-12">
+    <app-card [hidHeader]="true" cardClass="card-datatable" [options]="false">
+      <div style="padding-bottom: 10px;">
+        <button type="button" class="btn btn-success" data-toggle="modal"
+          (click)="openModal(Template);onNewUOM();">เพิ่มข้อมูล</button>
+
+        <!-- <button type="button" uiSref="work" class="btn btn-primary btn-raised" (click)="save(validationForm)"> Able
+          Pro
+          <span style="margin-left:10px;"><i class="feather icon-chevron-right"></i></span></button> -->
+      </div>
+      <div class="table-responsive">
+        <table *ngIf="uoms" datatable="ng" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger"
+          class="table table-striped table-bordered table-hover" style="width: 99%;">
+          <thead>
+            <tr>
+              <th style="width: 10%;">#</th>
+              <th style="width: 70%;">หมวดหมู่</th>
+              <th style="width: 10%;">เปิดใช้งาน</th>
+              <th style="width: 10%;"></th>
+            </tr>
+          </thead>
+          <tbody *ngIf="uoms?.length != 0">
+            <tr *ngFor="let uom of uoms">
+              <td>{{ uom.no }}</td>
+              <td>{{ uom.name }}</td>
+              <td *ngIf="uom.active==1;else tpl">
+                <i class="fa fa-check"></i>
+              </td>
+              <ng-template #tpl>
+                <td><i class="fa fa-times"></i></td>
+              </ng-template>
+              <!-- pen-square -->
+              <td class="text-center">
+                <button type="button" class="btn btn-icon" (click)="editModal(TemplateEdit,uom);"
+                  style="background-color: #00ACC1;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
+                  <i class="fa fa-pen"></i></button>
+                &nbsp;
+                <button type="button" class="btn btn-icon" (click)="DeleteAction(uom);"
+                  style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
+                  <i class="fa fa-trash"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-card>
+  </div>
+</div>
+
+<ng-template #Template>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">เพิ่มข้อมูลหมวดหมู่</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form #validationForm="ngForm" class="editForm" novalidate>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <label for="inputAddress">หมวดหมู่</label>
+            <input type="text" autocomplete="off" class="form-control" name="validation-required"
+              [ngClass]="{'is-invalid': !UOM_Name.valid && (UOM_Name.dirty || UOM_Name.touched || isSubmit)}"
+              #UOM_Name="ngModel" required [(ngModel)]="formInput.UOM_Name">
+            <label *ngIf="!UOM_Name.valid && (UOM_Name.dirty || UOM_Name.touched || isSubmit)"
+              id="validation-required-error"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกหมวดหมู่</label>
+
+            <!-- <input type="text" class="form-control" id="inputAddress" [(ngModel)]="UOM_Name"
+              [ngModelOptions]="{standalone: true}"> -->
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <div class="switch switch-primary d-inline m-r-10">
+              <input type="checkbox" id="switch-p-1" [checked]="UOM_Active" name="chkActive"
+                (change)="UOM_Active = !UOM_Active">
+              <label for="switch-p-1" class="cr"></label>
+            </div>
+            <label>เปิดใช้งาน</label>
+          </div>
+        </div>
+      </div>
+      <div class="text-right">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+          (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
+        <button type="button" class="btn btn-primary" (click)="SaveUOM(validationForm);">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+<ng-template #TemplateEdit>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">แก้ไขข้อมูลหมวดหมู่</h4>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="modalRef.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form #validationForm="ngForm" class="editForm" novalidate>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <label for="inputAddress">หมวดหมู่</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <input type="text" autocomplete="off" class="form-control" name="validation-required"
+              [ngClass]="{'is-invalid': !UOM_Name.valid && (UOM_Name.dirty || UOM_Name.touched || isSubmit)}"
+              #UOM_Name="ngModel" required [(ngModel)]="formInput.UOM_Name">
+            <label *ngIf="!UOM_Name.valid && (UOM_Name.dirty || UOM_Name.touched || isSubmit)"
+              id="validation-required-error"
+              class="error jquery-validation-error small form-text invalid-feedback">กรุณากรอกข้อมูลหมวดหมู่</label>
+            <!-- <input type="text" class="form-control" id="inputAddress" [(ngModel)]="UOM_Name"
+              [ngModelOptions]="{standalone: true}"> -->
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="form-group">
+            <div class="switch switch-primary d-inline m-r-10">
+              <input type="checkbox" id="switch-p-1" [checked]="UOM_Active" name="chkActive"
+                (change)="UOM_Active = !UOM_Active">
+              <label for="switch-p-1" class="cr"></label>
+            </div>
+            <label>เปิดใช้งาน</label>
+          </div>
+        </div>
+      </div>
+      <div class="text-right">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+          (click)="modalRef.hide()">ยกเลิก</button>&nbsp;
+        <button type="button" class="btn btn-primary" (click)="UpdateUOM(validationForm)">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</ng-template>

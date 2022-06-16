@@ -159,64 +159,34 @@ export class ProductComponent implements OnDestroy, OnInit {
     } else {
       // console.log(this.Product_ID)
       if (this.Product_ID == "") { //Add Product
-        if (parseInt(this.formInput.ProductType) == 1) {
-          // console.log("Save Product FG")
-          let json = {
-            barcode: this.Barcode,
-            name: this.formInput.Product_Name,
-            uom_id: parseInt(this.formInput.UOM_ID),
-            product_type: parseInt(this.formInput.ProductType),
-            image: "",
-            active: this.ConverBooltoInt(this.Product_Active),
-            user: parseInt(this.strUserID),
-          }
-          // console.log(JSON.stringify(json))
-          await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/product/addProduct", JSON.stringify(json))
-            .toPromise().then(
-              data => {
-                Swal.fire({
-                  text: "เพิ่มข้อมูลสินค้าเรียบร้อยแล้ว",
-                  icon: 'success',
-                  confirmButtonColor: '#3085d6',
-                  confirmButtonText: 'OK'
-                }).then((result) => {
-                  if (result.value) {
-                    // console.log("ngOnInit Again")
-                    this.ngOnInit();
-                  }
-                });
-              },
-              error => {
-                console.log(JSON.stringify(error))
-                Swal.fire({
-                  text: "ไม่สามารถเพิ่มข้อมูลสินค้าได้",
-                  icon: 'error',
-                  confirmButtonColor: '#3085d6',
-                  confirmButtonText: 'OK'
-                })
-              });
-        }
-        else if (parseInt(this.formInput.ProductType) == 2) {
-          console.log("Save Product Bundle")
-          let json = {
-            barcode: this.Barcode,
-            name: this.formInput.Product_Name,
-            uom_id: parseInt(this.formInput.UOM_ID),
-            product_type: parseInt(this.formInput.ProductType),
-            image: "",
-            active: this.ConverBooltoInt(this.Product_Active),
-            user: parseInt(this.strUserID),
-          }
-          //console.log(JSON.stringify(json))
-
-          // this.AddBundle("99");
-
-          await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/product/addProduct", JSON.stringify(json))
-            .toPromise().then(
-              async response => {
-                if (response) {
-                  await this.AddBundle(response['data'][0].product_id);
-                  // console.log("Run Step2")
+        var chkBarcodeExist = await this.CheckBarcodeExist(this.Barcode)
+        var chkProductNameExist = await this.CheckProductNameExist(this.formInput.Product_Name)
+        if (chkBarcodeExist == 1 || chkProductNameExist == 1) {
+          // Swal.fire({ icon: 'error', title: '', showConfirmButton: false });
+          // $('.swal2-container').css("z-index", '999999');
+          Swal.fire({
+            text: "ไม่สามารถเพิ่มข้อมูลสินค้าได้ เนื่องจาก Barcode หรือชื่อสินค้า ซ้ำ",
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+          })
+          $('.swal2-container').css("z-index", '999999');
+        } else {
+          if (parseInt(this.formInput.ProductType) == 1) {
+            // console.log("Save Product FG")
+            let json = {
+              barcode: this.Barcode,
+              name: this.formInput.Product_Name,
+              uom_id: parseInt(this.formInput.UOM_ID),
+              product_type: parseInt(this.formInput.ProductType),
+              image: "",
+              active: this.ConverBooltoInt(this.Product_Active),
+              user: parseInt(this.strUserID),
+            }
+            // console.log(JSON.stringify(json))
+            await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/product/addProduct", JSON.stringify(json))
+              .toPromise().then(
+                data => {
                   Swal.fire({
                     text: "เพิ่มข้อมูลสินค้าเรียบร้อยแล้ว",
                     icon: 'success',
@@ -228,25 +198,69 @@ export class ProductComponent implements OnDestroy, OnInit {
                       this.ngOnInit();
                     }
                   });
-                } else {
-                  console.log(JSON.stringify(response))
+                },
+                error => {
+                  console.log(JSON.stringify(error))
                   Swal.fire({
                     text: "ไม่สามารถเพิ่มข้อมูลสินค้าได้",
                     icon: 'error',
                     confirmButtonColor: '#3085d6',
                     confirmButtonText: 'OK'
                   })
-                }
-              },
-              error => {
-                console.log(JSON.stringify(error))
-                Swal.fire({
-                  text: "ไม่สามารถเพิ่มข้อมูลสินค้าได้",
-                  icon: 'error',
-                  confirmButtonColor: '#3085d6',
-                  confirmButtonText: 'OK'
-                })
-              });
+                });
+          }
+          else if (parseInt(this.formInput.ProductType) == 2) {
+            console.log("Save Product Bundle")
+            let json = {
+              barcode: this.Barcode,
+              name: this.formInput.Product_Name,
+              uom_id: parseInt(this.formInput.UOM_ID),
+              product_type: parseInt(this.formInput.ProductType),
+              image: "",
+              active: this.ConverBooltoInt(this.Product_Active),
+              user: parseInt(this.strUserID),
+            }
+            //console.log(JSON.stringify(json))
+
+            // this.AddBundle("99");
+
+            await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/product/addProduct", JSON.stringify(json))
+              .toPromise().then(
+                async response => {
+                  if (response) {
+                    await this.AddBundle(response['data'][0].product_id);
+                    // console.log("Run Step2")
+                    Swal.fire({
+                      text: "เพิ่มข้อมูลสินค้าเรียบร้อยแล้ว",
+                      icon: 'success',
+                      confirmButtonColor: '#3085d6',
+                      confirmButtonText: 'OK'
+                    }).then((result) => {
+                      if (result.value) {
+                        // console.log("ngOnInit Again")
+                        this.ngOnInit();
+                      }
+                    });
+                  } else {
+                    console.log(JSON.stringify(response))
+                    Swal.fire({
+                      text: "ไม่สามารถเพิ่มข้อมูลสินค้าได้",
+                      icon: 'error',
+                      confirmButtonColor: '#3085d6',
+                      confirmButtonText: 'OK'
+                    })
+                  }
+                },
+                error => {
+                  console.log(JSON.stringify(error))
+                  Swal.fire({
+                    text: "ไม่สามารถเพิ่มข้อมูลสินค้าได้",
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                  })
+                });
+          }
         }
       } else { //Update Product
         if (parseInt(this.formInput.ProductType) == 1) {
@@ -658,6 +672,30 @@ export class ProductComponent implements OnDestroy, OnInit {
         });
 
     // this.ngOnDestroy();
+  }
+
+  async CheckBarcodeExist(barcode: string) {
+    var chkBarcodeExist = 0
+    for (let i = 0; i < this.products.length; i++) {
+      if (barcode == this.products[i].barcode) {
+        chkBarcodeExist = 1
+        // chkBarcodeExist = parseInt(this.raws[i].id)
+      }
+    }
+
+    return chkBarcodeExist
+  }
+
+  async CheckProductNameExist(productname: string) {
+    var chkProductNameExist = 0
+    for (let i = 0; i < this.products.length; i++) {
+      if (productname == this.products[i].name) {
+        chkProductNameExist = 1
+        // chkBarcodeExist = parseInt(this.raws[i].id)
+      }
+    }
+
+    return chkProductNameExist
   }
 
   openModal(template: TemplateRef<any>) {

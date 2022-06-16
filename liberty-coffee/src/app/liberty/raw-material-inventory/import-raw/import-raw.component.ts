@@ -9,6 +9,9 @@ import 'rxjs/add/operator/map';
 import { NgbDateStruct, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
 import { async } from 'rxjs/internal/scheduler/async';
 import { environment } from 'src/environments/environment';
+import { IOption } from 'ng-select';
+
+
 
 @Injectable()
 export class CustomDateParserFormatter extends NgbDateParserFormatter {
@@ -93,6 +96,34 @@ export class ImportRawComponent implements OnInit {
   // doc_date: any;
   linecount: any;
   doc_date: NgbDateStruct;
+
+  simpleOption: Array<IOption> = [
+    { value: '0', label: 'Art0' },
+    { value: '1', label: 'Art1' },
+    { value: '2', label: 'Art2' },
+    { value: '3', label: 'Art3' },
+    { value: '4', label: 'Art4' },
+    { value: '5', label: 'Art5' },
+    { value: '6', label: 'Art6' },
+    { value: '7', label: 'Art7' },
+    { value: '8', label: 'Art8' }
+  ];
+  selectedOption = '3';
+
+  // simpleOption: Array<IOption> = this.ddlRAWs
+
+  characters: Array<IOption>;
+  selectedCharacter: string = '3';
+
+  people: any[] = [];
+  peopleLoading = false;
+
+  cities = [
+    { id: 1, name: 'Vilnius' },
+    { id: 2, name: 'Kaunas' },
+    { id: 3, name: 'Pavilnys' }
+  ];
+  selectedCityId: number = null;
 
 
 
@@ -183,6 +214,8 @@ export class ImportRawComponent implements OnInit {
           // console.log(data)
           this.ddlRAWs = data['data'];
           // console.log(this.ddlRole)
+          this.characters = data['data'];
+          // console.log(this.characters);
         },
         error => {
           //console.log(error);
@@ -600,7 +633,7 @@ export class ImportRawComponent implements OnInit {
 
   openModal(template: TemplateRef<any>) {
     this.modalRef = this.modalService.show(template, {
-      class: 'modal-lg modal-dialog-centered',
+      class: 'modal-xl modal-dialog-centered',
     });
   }
 
@@ -618,7 +651,7 @@ export class ImportRawComponent implements OnInit {
     this.getStockLines();
 
     this.modalRef = this.modalService.show(template, {
-      class: 'modal-lg modal-dialog-centered',
+      class: 'modal-xl modal-dialog-centered',
     });
 
   }
@@ -651,19 +684,22 @@ export class ImportRawComponent implements OnInit {
 
   onChange(raw) {
     // console.log(deviceValue)
+    // alert(raw)
     if (raw != "") {
       for (let i = 0; i < this.ddlRAWs.length; i++) {
         if (raw == this.ddlRAWs[i].raw_id) {
           this.item_raw_name = this.ddlRAWs[i].raw_name
           this.item_raw_id = this.ddlRAWs[i].raw_id
+          this.newItemStock.uom_id = this.ddlRAWs[i].uom_id2
+          this.onChangeUOM(this.ddlRAWs[i].uom_id2)
         }
       }
     }
-    // this.item_raw_name = deviceValue[0].raw_name;
   }
 
   onChangeUOM(uom) {
-    // console.log(deviceValue)
+    // console.log(uom)
+    // this.newItemStock.uom_id = uom
     if (uom != "") {
       for (let i = 0; i < this.ddlUOMs.length; i++) {
         if (uom == this.ddlUOMs[i].uom_id) {
@@ -680,6 +716,26 @@ export class ImportRawComponent implements OnInit {
       return true;
     }
     return false;
+
+  }
+
+  keyPress() {
+    // console.log(this.ddlRAWs)
+    // alert(this.newItemStock.barcode)
+
+    if (this.newItemStock.barcode != "") {
+      for (let i = 0; i < this.ddlRAWs.length; i++) {
+        if (this.newItemStock.barcode == this.ddlRAWs[i].barcode) {
+          this.newItemStock.raw_id = this.ddlRAWs[i].raw_id
+          this.onChange(this.ddlRAWs[i].raw_id)
+        }
+      }
+    } else {
+      this.newItemStock.raw_id = 0
+      this.newItemStock.uom_id = 0
+    }
+
+    // alert(this.barcode)
 
   }
 

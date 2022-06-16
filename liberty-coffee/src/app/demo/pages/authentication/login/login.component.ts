@@ -35,6 +35,8 @@ export class LoginComponent implements OnInit {
   async onLogin(value) {
     // console.log('OK')
     // let json = { username: this.username, password: this.password }
+    await this.TestServer()
+
     await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/share/login", JSON.stringify(value))
       .toPromise().then(
         response => {
@@ -72,5 +74,24 @@ export class LoginComponent implements OnInit {
             confirmButtonText: 'OK'
           })
         });
+  }
+
+  async TestServer() {
+    var checkServer = 0
+    for (let i = 1; i <= 5; i++) {
+      if (checkServer == 0) {
+        await this.apiService.restApiGet(environment.apiLibertyUrl + "/share/getRole")
+          .toPromise().then(
+            response => {
+              if (response) {
+                checkServer = 1
+                console.log("Test Server " + i + " Success")
+              }
+            },
+            error => {
+              console.log("Test Server " + i + " Fail")
+            });
+      }
+    }
   }
 }

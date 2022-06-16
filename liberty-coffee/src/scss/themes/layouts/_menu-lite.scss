@@ -344,7 +344,7 @@
         }
 
         .notification {
-            width: 350px;
+            width: 250px;
             padding: 0;
             line-height: 1.4;
             overflow: hidden;
@@ -358,7 +358,7 @@
             }
 
             .noti-head {
-                background: $menu-dark-background;
+                background: #379d81;
                 padding: 15px 20px;
 
                 h6 {
@@ -375,7 +375,7 @@
             .noti-body {
                 padding: 0;
                 position: relative;
-                height: 300px;
+                height: auto;
 
                 img {
                     width: 40px;

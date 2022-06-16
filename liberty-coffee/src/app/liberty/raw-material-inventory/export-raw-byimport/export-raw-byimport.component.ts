@@ -50,7 +50,7 @@ export class CustomDateParserFormatter extends NgbDateParserFormatter {
 export class ExportRawByimportComponent implements OnInit {
   strFullName: string;
   strUserID: string;
-  dtOptions: any = {};
+  dtOptions: any;
   // dtOptions: any;
   dtOptionsBundle: any;
   stocks = [];

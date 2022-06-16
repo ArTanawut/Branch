@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
 import { ApiService } from '../../../../../liberty/services/api.service';
 import { environment } from 'src/environments/environment';
+import { async } from 'rxjs/internal/scheduler/async';
 
 @Component({
   selector: 'app-nav-right',
@@ -16,6 +17,9 @@ export class NavRightComponent implements OnInit {
   strRoleId: any;
   branchId: any;
   ddlBranch: any[];
+  notification: any[];
+  numberNotification: any;
+  dateNotification: any;
 
   constructor(private router: Router, private http: HttpClient,
     private apiService: ApiService) { }
@@ -30,7 +34,10 @@ export class NavRightComponent implements OnInit {
 
     if (this.strRoleId == "1") {
       this.getddlBranch()
+
     }
+
+    this.getNotification()
 
 
   }
@@ -60,4 +67,56 @@ export class NavRightComponent implements OnInit {
     // console.log("the selected value is " + value);
   }
 
+  async getNotification() {
+    //confirm, unconfirm
+    await this.apiService.restApiGet(environment.apiLibertyUrl + "/share/getNotifications")
+      .toPromise().then(
+        async data => {
+          this.notification = data['data'];
+          this.dateNotification = this.notification[0].notification_date
+          this.numberNotification = await this.CheckNumberNoti()
+        },
+        error => {
+          console.log(JSON.stringify(error))
+        });
+
+
+  }
+
+  onRead() {
+    this.numberNotification = ""
+    this.apiService.restApiPost(environment.apiLibertyUrl + "/share/updateReadNotification")
+      .subscribe(
+        data => {
+
+        },
+        error => {
+          //console.log(error);
+        });
+  }
+
+  async CheckNumberNoti() {
+    this.numberNotification = 0
+    for (let i = 0; i < this.notification.length; i++) {
+      if (this.notification[i].read_flag == "0") {
+        if (this.numberNotification == 0) {
+          this.numberNotification = 1
+        } else {
+          this.numberNotification = this.numberNotification + 1
+        }
+      }
+    }
+
+    if (this.numberNotification == 0) {
+      this.numberNotification = ""
+    }
+
+    return this.numberNotification
+  }
+
+
+}
+
+function numberWithCommas(x) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }

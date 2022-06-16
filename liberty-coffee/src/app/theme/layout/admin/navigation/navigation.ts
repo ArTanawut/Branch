@@ -97,7 +97,16 @@ const NavigationItemsAdmin = [
         icon: 'fa fa-weight',
         url: '/uom',
         classes: 'nav-item'
+      },
+      {
+        id: 'group',
+        title: 'หมวดหมู่',
+        type: 'item',
+        icon: 'fa fa-object-group',
+        url: '/group',
+        classes: 'nav-item'
       }
+
     ]
   },
   {
@@ -250,6 +259,14 @@ const NavigationItemsManager = [
         icon: 'fa fa-weight',
         url: '/uom',
         classes: 'nav-item'
+      },
+      {
+        id: 'group',
+        title: 'หมวดหมู่',
+        type: 'item',
+        icon: 'fa fa-object-group',
+        url: '/group',
+        classes: 'nav-item'
       }
     ]
   },
@@ -370,6 +387,14 @@ const NavigationItemsEmployee = [
         type: 'item',
         icon: 'fa fa-weight',
         url: '/uom',
+        classes: 'nav-item'
+      },
+      {
+        id: 'group',
+        title: 'หมวดหมู่',
+        type: 'item',
+        icon: 'fa fa-object-group',
+        url: '/group',
         classes: 'nav-item'
       }
     ]

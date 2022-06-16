@@ -23,7 +23,7 @@
               <td>{{ stock.doc_no }}</td>
               <td>{{ stock.doc_date }}</td>
               <td>{{ stock.record }} รายการ</td>
-              <td>{{ stock.total_price-0 }}</td>
+              <td>{{ stock.total_price-0| number : '1.2-2'}}</td>
               <td *ngIf="stock.draft==1;else tpl">
                 <i class="fa fa-check"></i>
               </td>
@@ -137,12 +137,12 @@
         <div class="col-2">
           <div class="form-group">
             <input type="text" class="form-control" id="inputBarcode" [(ngModel)]="newItemStock.barcode"
-              name="newItemBarcode">
+              name="newItemBarcode" (keyup)="keyPress()" autocomplete="off">
           </div>
         </div>
         <div class="col-2">
           <div class="form-group">
-            <select id="inputState1" class="form-control" [(ngModel)]="newItemStock.raw_id" name="newItemName"
+            <select id="inputRawId" class="form-control" [(ngModel)]="newItemStock.raw_id" name="newRawId"
               (change)="onChange($event.target.value)">
               <option selected></option>
               <option *ngFor="let raw of ddlRAWs" [value]="raw.raw_id">
@@ -159,7 +159,7 @@
         </div>
         <div class="col-2">
           <div class="form-group">
-            <select id="inputState1" class="form-control" [(ngModel)]="newItemStock.uom_id" name="newItemName"
+            <select id="inputUOMID1" class="form-control" [(ngModel)]="newItemStock.uom_id" name="newUOMID1"
               (change)="onChangeUOM($event.target.value)">
               <option selected></option>
               <option *ngFor="let uom of ddlUOMs" [value]="uom.uom_id">
@@ -200,7 +200,7 @@
                   <td style="padding: 3px;text-align: center;">{{item.raw_material_name}}</td>
                   <td style="padding: 3px;text-align: center;">{{item.quantity-0}}</td>
                   <td style="padding: 3px;text-align: center;">{{item.uom_name}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.price}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.price| number : '1.2-2'}}</td>
                   <td style="padding: 3px;text-align: center;">
                     <button type="button" class="btn btn-icon" (click)="removeItem(i)"
                       style="background-color: red;color: white;padding: 2px 5px 2px 5px;font-size: 12px;">
@@ -254,10 +254,10 @@
                 <tr *ngFor="let item of items; let i = index">
                   <td style="padding: 3px;text-align: center;">{{item.barcode}}</td>
                   <td style="padding: 3px;text-align: center;">{{item.raw_material_name}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.quantity-0}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.quantity-0| number : '1.2-2'}}</td>
                   <td style="padding: 3px;text-align: center;">{{item.uom_name}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.price}}</td>
-                  <td style="padding: 3px;text-align: center;">{{item.total_price}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.price| number : '1.2-2'}}</td>
+                  <td style="padding: 3px;text-align: center;">{{item.total_price| number : '1.2-2'}}</td>
                 </tr>
               </tbody>
             </table>

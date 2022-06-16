@@ -11,6 +11,8 @@ export class DashboardComponent implements OnInit {
   strFullName: string;
   strRoleId: string;
   strBranchId: string;
+  ddlTest: any;
+  barcode: any;
 
   constructor() { }
 
@@ -25,4 +27,10 @@ export class DashboardComponent implements OnInit {
     this.strBranchId = branchid
   }
 
+  // keyPress() {
+  //   // alert(this.barcode)
+  //   this.ddlTest = this.barcode
+  // }
+
 }
+

@@ -25,6 +25,8 @@ import { ModalModule, BsModalService } from 'ngx-bootstrap/modal';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { TextMaskModule } from 'angular2-text-mask';
 import { NgNumberFormatterModule } from 'ng-number-formatter';
+import { SelectModule } from 'ng-select';
+import { CommonModule } from '@angular/common';
 // import { DataTableDirective } from 'angular-datatables';
 
 // import { SelectModule } from 'ng-select';
@@ -50,6 +52,8 @@ import { PermissionComponent } from './liberty/user-management/permission/permis
 import { ShopComponent } from './liberty/shop-management/shop/shop.component';
 import { BranchComponent } from './liberty/shop-management/branch/branch.component';
 import { ExportRawByimportComponent } from './liberty/raw-material-inventory/export-raw-byimport/export-raw-byimport.component';
+import { GroupComponent } from './liberty/main-data/group/group.component';
+
 
 
 @NgModule({
@@ -81,7 +85,8 @@ import { ExportRawByimportComponent } from './liberty/raw-material-inventory/exp
     PermissionComponent,
     ShopComponent,
     BranchComponent,
-    ExportRawByimportComponent
+    ExportRawByimportComponent,
+    GroupComponent
   ],
   imports: [
     BrowserModule,
@@ -100,6 +105,8 @@ import { ExportRawByimportComponent } from './liberty/raw-material-inventory/exp
     NgbDatepickerModule,
     TextMaskModule,
     NgNumberFormatterModule,
+    SelectModule,
+    CommonModule,
     // DataTableDirective,
     // SelectModule,
     // SelectOptionService,

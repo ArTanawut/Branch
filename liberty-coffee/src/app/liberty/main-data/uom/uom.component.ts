@@ -129,37 +129,52 @@ export class UomComponent implements OnDestroy, OnInit {
     } else {
       this.modalRef.hide();
       // console.log("Save UOM")
-      let json = {
-        name: this.formInput.UOM_Name,
-        active: this.ConverBooltoInt(this.UOM_Active),
-        user: this.strFullName,
-      }
-      // console.log(JSON.stringify(json))
-      await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/uom/addUOM", JSON.stringify(json))
-        .pipe(first())
-        .toPromise().then(
-          data => {
-            Swal.fire({
-              text: "เพิ่มข้อมูลหน่วยนับเรียบร้อยแล้ว",
-              icon: 'success',
-              confirmButtonColor: '#3085d6',
-              confirmButtonText: 'OK'
-            }).then((result) => {
-              if (result.value) {
-                // console.log("ngOnInit Again")
-                this.ngOnInit();
-              }
+
+      var chkUOMExist = await this.CheckUOMExist(this.formInput.UOM_Name)
+      if (chkUOMExist == 1) {
+        // Swal.fire({ icon: 'error', title: '', showConfirmButton: false });
+        // $('.swal2-container').css("z-index", '999999');
+        Swal.fire({
+          text: "หน่วยนับซ้ำ ไม่สามารถเพิ่มข้อมูลหน่วยนับได้",
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'OK'
+        })
+        $('.swal2-container').css("z-index", '999999');
+      } else {
+        let json = {
+          name: this.formInput.UOM_Name,
+          active: this.ConverBooltoInt(this.UOM_Active),
+          user: this.strFullName,
+        }
+
+        // console.log(JSON.stringify(json))
+        await this.apiService.restApiSendParm(environment.apiLibertyUrl + "/uom/addUOM", JSON.stringify(json))
+          .pipe(first())
+          .toPromise().then(
+            data => {
+              Swal.fire({
+                text: "เพิ่มข้อมูลหน่วยนับเรียบร้อยแล้ว",
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              }).then((result) => {
+                if (result.value) {
+                  // console.log("ngOnInit Again")
+                  this.ngOnInit();
+                }
+              });
+            },
+            error => {
+              console.log(stringify(error))
+              Swal.fire({
+                text: "ไม่สามารถเพิ่มข้อมูลหน่วยนับได้",
+                icon: 'error',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+              })
             });
-          },
-          error => {
-            console.log(stringify(error))
-            Swal.fire({
-              text: "ไม่สามารถเพิ่มข้อมูลหน่วยนับได้",
-              icon: 'error',
-              confirmButtonColor: '#3085d6',
-              confirmButtonText: 'OK'
-            })
-          });
+      }
     }
   }
 
@@ -412,6 +427,16 @@ export class UomComponent implements OnDestroy, OnInit {
         )
       }
     })
+  }
+
+  async CheckUOMExist(uomname: string) {
+    var chkUOMExist = 0
+    for (let i = 0; i < this.uoms.length; i++) {
+      if (uomname == this.uoms[i].name) {
+        chkUOMExist = 1
+      }
+    }
+    return chkUOMExist
   }
 
 
