@@ -79,6 +79,24 @@ func (p *ResultsddlUOMs) setErrorHandle(status int, msg string) {
 	p.ErrorCode = status
 }
 
+type ResultsddlGroups struct {
+	Result    []ddlGroups `json:"data"`
+	ErrorCode int         `json:"error_code"`
+	Message   string      `json:"message"`
+}
+
+type ddlGroups struct {
+	// Id          string `json:"id"`
+	Group_Id   string `json:"group_id"`
+	Group_Name string `json:"group_name"`
+	// Create_Date string `json:"create_date"`
+}
+
+func (p *ResultsddlGroups) setErrorHandle(status int, msg string) {
+	p.Message = msg
+	p.ErrorCode = status
+}
+
 type LoginReq struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -112,10 +130,13 @@ type ResultsddlRAWs struct {
 
 type ddlRAWs struct {
 	// Id          string `json:"id"`
-	Raw_Id   string `json:"raw_id"`
-	Raw_Name string `json:"raw_name"`
-	Uom_Id   string `json:"uom_id"`
-	Uom_Name string `json:"uom_name"`
+	Raw_Id    string `json:"raw_id"`
+	Raw_Name  string `json:"raw_name"`
+	Uom_Id    string `json:"uom_id"`
+	Uom_Name  string `json:"uom_name"`
+	Barcode   string `json:"barcode"`
+	Uom_Id2   string `json:"uom_id2"`
+	Uom_Name2 string `json:"uom_name2"`
 	// Create_Date string `json:"create_date"`
 }
 
@@ -323,6 +344,60 @@ func SelectddlRAWs() ([]map[string]interface{}, error) {
 
 	return results, nil
 
+}
+
+func getddlGroups(c echo.Context) (err error) {
+	res := new(ResultsddlGroups)
+	res.ErrorCode = 0
+
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+
+	results, err := SelectddlGroups()
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+	log.Println(results)
+	mapstructure.Decode(results, &res.Result)
+	return c.JSON(http.StatusOK, res)
+}
+
+func SelectddlGroups() ([]map[string]interface{}, error) {
+
+	results, err := models.ExecuteStore("CALL LIB_ddlGroups", nil)
+	if err != nil {
+
+		return nil, err
+	}
+
+	return results, nil
+
+}
+
+func testServer(c echo.Context) (err error) {
+	res := new(ResultsRole)
+	res.ErrorCode = 0
+
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+
+	results, err := SelectRole()
+	if err != nil {
+		log.Println(err.Error())
+		res.setErrorHandle(http.StatusBadRequest, models.Message[http.StatusBadRequest])
+		return c.JSON(http.StatusBadRequest, res)
+	}
+	log.Println(results)
+	mapstructure.Decode(results, &res.Result)
+	return c.JSON(http.StatusOK, res)
 }
 
 // GetConfig get secretKey

@@ -68,6 +68,9 @@ func main() {
 	e.POST("share/login", onLogin)
 	e.GET("share/ddlUOMs", getddlUOMs)
 	e.GET("share/ddlRAWs", getddlRAWs)
+	e.GET("share/getddlGroups", getddlGroups)
+	e.GET("share/getNotifications", getNotifications)
+	e.POST("share/updateReadNotification", updateReadNotification)
 
 	// user
 	e.GET("user/getUser", getUser)
@@ -95,8 +98,19 @@ func main() {
 	// raw
 	e.GET("raw/getRaws", getRaws)
 	e.POST("raw/addRaw", addRaw)
+	e.POST("raw/addRawImport", addRawImport)
 	e.POST("raw/updateRaw", updateRaw)
 	e.POST("raw/deleteRaw", deleteRaw)
+	e.POST("raw/getRUOMTs", getRUOMTs)
+	e.POST("raw/addRUOMT", addRUOMT)
+	e.POST("raw/updateRUOMT", updateRUOMT)
+	e.POST("raw/deleteRUOMT", deleteRUOMT)
+
+	//group
+	e.GET("group/getGroups", getGroups)
+	e.POST("group/addGroup", addGroup)
+	e.POST("group/updateGroup", updateGroup)
+	e.POST("group/deleteGroup", deleteGroup)
 
 	// product
 	e.GET("product/getProducts", getProducts)
